@@ -27,6 +27,7 @@ val OnKineticGreen = Color(0xFF052E16)
 
 val IndigoPurple = Color(0xFF6366F1)
 val SleekIndigo = Color(0xFF6366F1)
+val SleekIndigoHover = Color(0xFF4F46E5)
 val IndigoPurpleDim = Color(0xFFC0C1FF)
 val IndigoContainer = Color(0xFF3131C0)
 val OnIndigo = Color(0xFFFFFFFF)

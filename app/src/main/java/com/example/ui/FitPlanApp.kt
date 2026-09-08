@@ -98,6 +98,7 @@ fun FitPlanApp(
                                 todaySession = uiState.todaySession,
                                 completedActivityIds = completedIds,
                                 weeklyGoal = uiState.preferences.weeklyGoal,
+                                weightUnit = uiState.preferences.weightUnit,
                                 onUpdateWeeklyGoal = { goal -> viewModel.setWeeklyGoal(goal) },
                                 onToggleActivityDone = { act ->
                                     viewModel.toggleActivityDone(act)

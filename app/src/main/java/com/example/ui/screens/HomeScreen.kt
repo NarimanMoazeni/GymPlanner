@@ -61,8 +61,10 @@ import com.example.data.local.entity.UserProfileEntity
 import com.example.data.local.entity.WorkoutDayEntity
 import com.example.data.local.entity.WorkoutSessionEntity
 import com.example.data.model.ActivityType
+import com.example.data.model.WeightUnit
 import com.example.ui.AppScreen
 import com.example.ui.components.WeeklyDayBar
+import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
@@ -78,6 +80,7 @@ fun HomeScreen(
     todaySession: WorkoutSessionEntity?,
     completedActivityIds: Set<Long>,
     weeklyGoal: String = "",
+    weightUnit: WeightUnit = WeightUnit.KG,
     onUpdateWeeklyGoal: ((String) -> Unit)? = null,
     onToggleActivityDone: (ActivityEntity) -> Unit,
     onStartWorkout: () -> Unit,
@@ -238,6 +241,7 @@ fun HomeScreen(
                         activity = act,
                         index = index + 1,
                         isDone = isDone,
+                        weightUnit = weightUnit,
                         onToggle = { onToggleActivityDone(act) }
                     )
                 }
@@ -506,6 +510,7 @@ private fun TodayActivityRow(
     activity: ActivityEntity,
     index: Int,
     isDone: Boolean,
+    weightUnit: WeightUnit,
     onToggle: () -> Unit
 ) {
     val language = LocalCurrentLanguage.current
@@ -558,7 +563,11 @@ private fun TodayActivityRow(
             )
 
             val metaText = when (activity.type) {
-                ActivityType.WEIGHT_REPS -> "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(activity.weight, language)} کیلو"
+                ActivityType.WEIGHT_REPS -> {
+                    val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
+                    val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
+                    "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(displayWeight, language)} $unitLabel"
+                }
                 ActivityType.DURATION -> "${formatDigits(activity.durationMinutes, language)} دقیقه"
                 ActivityType.DISTANCE -> "${formatDigits(activity.distanceKm, language)} کیلومتر"
                 ActivityType.SIMPLE -> "فعالیت ساده"

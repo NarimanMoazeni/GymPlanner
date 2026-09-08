@@ -92,13 +92,22 @@ fun AddEditActivitySheet(
     var type by remember(initialActivity) { mutableStateOf(initialActivity?.type ?: ActivityType.WEIGHT_REPS) }
     var sets by remember(initialActivity) { mutableIntStateOf(initialActivity?.sets ?: 4) }
     var reps by remember(initialActivity) { mutableIntStateOf(initialActivity?.reps ?: 10) }
-    var weight by remember(initialActivity) { mutableDoubleStateOf(initialActivity?.weight ?: 25.0) }
+    var weight by remember(initialActivity, weightUnit) {
+        val initialKg = initialActivity?.weight ?: 25.0
+        mutableDoubleStateOf(WeightUnit.fromKg(initialKg, weightUnit))
+    }
     var duration by remember(initialActivity) { mutableIntStateOf(initialActivity?.durationMinutes ?: 15) }
     var distance by remember(initialActivity) { mutableDoubleStateOf(initialActivity?.distanceKm ?: 3.0) }
     var nameError by remember { mutableStateOf<String?>(null) }
 
     val unitLabel = if (weightUnit == WeightUnit.KG) "kg" else "lbs"
     val unitSuffix = if (weightUnit == WeightUnit.KG) "کیلو" else "پوند"
+    val weightStep = if (weightUnit == WeightUnit.KG) 2.5 else 5.0
+    val weightPresets = if (weightUnit == WeightUnit.KG) {
+        listOf("۱۵ $unitSuffix" to 15.0, "۲۰ $unitSuffix" to 20.0, "۲۵ $unitSuffix" to 25.0, "۳۰ $unitSuffix" to 30.0)
+    } else {
+        listOf("۳۰ $unitSuffix" to 30.0, "۴۵ $unitSuffix" to 45.0, "۵۵ $unitSuffix" to 55.0, "۷۰ $unitSuffix" to 70.0)
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -313,13 +322,13 @@ fun AddEditActivitySheet(
                         title = strings.weightLabel,
                         value = weight,
                         onValueChange = { weight = it.coerceAtLeast(0.0) },
-                        step = 2.5,
+                        step = weightStep,
                         minValue = 0.0,
-                        maxValue = 500.0,
+                        maxValue = if (weightUnit == WeightUnit.KG) 500.0 else 1100.0,
                         unitSuffix = unitLabel,
                         dotColor = OrangeAccent,
                         accentValueColor = OrangeAccent,
-                        quickPresets = listOf("۱۵ $unitSuffix" to 15.0, "۲۰ $unitSuffix" to 20.0, "۲۵ $unitSuffix" to 25.0, "۳۰ $unitSuffix" to 30.0),
+                        quickPresets = weightPresets,
                         presetLabel = strings.commonLabel,
                         testTag = "stepper_weight"
                     )
@@ -414,7 +423,8 @@ fun AddEditActivitySheet(
                         if (name.isBlank()) {
                             nameError = strings.errEnterName
                         } else {
-                            onSave(name, subtitle, type, sets, reps, weight, duration, distance)
+                            val canonicalWeightKg = WeightUnit.toKg(weight, weightUnit)
+                            onSave(name, subtitle, type, sets, reps, canonicalWeightKg, duration, distance)
                         }
                     },
                     modifier = Modifier

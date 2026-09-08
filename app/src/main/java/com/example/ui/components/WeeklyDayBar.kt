@@ -37,6 +37,7 @@ import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
 import com.example.ui.theme.IndigoPurple
 import com.example.ui.theme.KineticGreen
+import com.example.ui.theme.SleekIndigo
 import com.example.util.FormattedDateInfo
 import com.example.util.PersianDateHelper
 

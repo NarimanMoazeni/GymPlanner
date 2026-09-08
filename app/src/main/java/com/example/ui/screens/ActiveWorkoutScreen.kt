@@ -55,6 +55,7 @@ import com.example.data.local.entity.WorkoutDayEntity
 import com.example.data.model.ActivityType
 import com.example.data.model.WeightUnit
 import com.example.ui.components.RestTimerCard
+import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
@@ -264,7 +265,7 @@ private fun ActiveActivityItemCard(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val indexStr = String.format("%02d", index)
-    val unitLabel = if (weightUnit == WeightUnit.KG) "کیلوگرم" else "پوند"
+    val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
 
     val containerBg = when {
         isActive -> MaterialTheme.colorScheme.surfaceContainerHigh
@@ -378,8 +379,9 @@ private fun ActiveActivityItemCard(
         ) {
             when (activity.type) {
                 ActivityType.WEIGHT_REPS -> {
+                    val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
                     Text(
-                        text = "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(activity.weight, language)} $unitLabel",
+                        text = "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(displayWeight, language)} $unitLabel",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -419,6 +421,7 @@ private fun ActiveActivityItemCard(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (activity.type == ActivityType.WEIGHT_REPS) {
+                    val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -430,7 +433,7 @@ private fun ActiveActivityItemCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "وزن: ${formatDigits(activity.weight, language)} $unitLabel",
+                            text = "وزن: ${formatDigits(displayWeight, language)} $unitLabel",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = KineticGreen
                         )

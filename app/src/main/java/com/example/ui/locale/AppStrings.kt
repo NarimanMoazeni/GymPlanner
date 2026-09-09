@@ -252,6 +252,12 @@ data class AppStrings(
     val reportBmiOverweight: String = "اضافه وزن",
     val reportBmiObese1: String = "چاقی درجه ۱",
     val reportBmiObese2: String = "چاقی درجه ۲+",
+    // Report Setup Strings
+    val reportSetupTitle: String = "تنظیم قد و وزن اولیه",
+    val reportSetupDesc: String = "برای محاسبه شاخص BMI و رسم نمودار روند وزن، قد و وزن اولیه خود را وارد کنید",
+    val reportSetupBtn: String = "ثبت و محاسبه گزارش",
+    val reportSetupHeightLabel: String = "قد (سانتی‌متر)",
+    val reportSetupWeightLabel: String = "وزن اولیه (کیلوگرم)",
     // Monthly Calendar Strings
     val calendarViewFullMonth: String = "نمایش تقویم ماه",
     val calendarHideMonth: String = "بستن تقویم ماه",
@@ -644,6 +650,12 @@ val EnglishStrings = AppStrings(
     reportBmiOverweight = "Overweight",
     reportBmiObese1 = "Obese Class I",
     reportBmiObese2 = "Obese Class II+",
+    // Report Setup Strings
+    reportSetupTitle = "Setup Your Body Stats",
+    reportSetupDesc = "Enter your initial height and weight to calculate BMI and track your weight trends",
+    reportSetupBtn = "Save & Generate Report",
+    reportSetupHeightLabel = "Height (cm)",
+    reportSetupWeightLabel = "Initial Weight (kg)",
     // Monthly Calendar Strings
     calendarViewFullMonth = "View Full Month",
     calendarHideMonth = "Hide Full Month",

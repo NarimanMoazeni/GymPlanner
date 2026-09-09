@@ -165,8 +165,10 @@ fun NumericStepperCard(
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontWeight = FontWeight.Black,
                                 fontFamily = FontFamily.Monospace,
-                                letterSpacing = 0.5.sp
+                                letterSpacing = 0.sp
                             ),
+                            maxLines = 1,
+                            softWrap = false,
                             color = resolvedAccent
                         )
                     }

@@ -421,6 +421,24 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun setUserHeight(height: Float) {
+        viewModelScope.launch {
+            repository.setUserHeight(height)
+        }
+    }
+
+    fun setUserWeight(weight: Float) {
+        viewModelScope.launch {
+            repository.setUserWeight(weight)
+        }
+    }
+
+    fun logWeightEntry(weight: Float, dateKey: String = PersianDateHelper.getTodayDateKey()) {
+        viewModelScope.launch {
+            repository.logWeightEntry(weight, dateKey)
+        }
+    }
+
     fun exportBackup(onResult: (String) -> Unit) {
         viewModelScope.launch {
             val json = repository.exportBackupJson()

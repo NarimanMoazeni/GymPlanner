@@ -185,7 +185,13 @@ private fun TactileDayKey(
 
                     Text(
                         text = formatDigits(dayNumber, language),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black, fontSize = 18.sp),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
                         color = Color.White
                     )
 
@@ -263,7 +269,13 @@ private fun TactileDayKey(
 
                     Text(
                         text = formatDigits(dayNumber, language),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 17.sp),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 17.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
@@ -314,7 +326,13 @@ private fun TactileDayKey(
 
                 Text(
                     text = formatDigits(dayNumber, language),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold, fontSize = 16.sp),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 

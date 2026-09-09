@@ -448,8 +448,11 @@ private fun CalendarDayCell(
                 text = formatDigits(dayNumber, language),
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
+                    letterSpacing = 0.sp
                 ),
+                maxLines = 1,
+                softWrap = false,
                 color = when {
                     isSelected -> Color.White
                     isToday -> ElectricIndigo

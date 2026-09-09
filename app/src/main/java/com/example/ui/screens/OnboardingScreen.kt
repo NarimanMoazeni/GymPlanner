@@ -218,12 +218,19 @@ fun OnboardingScreen(
                         ) {
                             Text(
                                 text = formatDigits(age, language),
-                                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 0.sp
+                                ),
+                                maxLines = 1,
+                                softWrap = false,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
                                 text = strings.yearsSuffix,
                                 style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                softWrap = false,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }

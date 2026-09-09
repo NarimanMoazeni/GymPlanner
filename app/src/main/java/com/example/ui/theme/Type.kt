@@ -12,21 +12,21 @@ val AppTypography = Typography(
         fontWeight = FontWeight.Black,
         fontSize = 38.sp,
         lineHeight = 50.sp,
-        letterSpacing = (-0.5).sp
+        letterSpacing = 0.sp
     ),
     headlineLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp,
         lineHeight = 38.sp,
-        letterSpacing = (-0.5).sp
+        letterSpacing = 0.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 22.sp,
         lineHeight = 32.sp,
-        letterSpacing = (-0.5).sp
+        letterSpacing = 0.sp
     ),
     // Metric Numbers: headlineSmall, titleLarge, labelLarge
     headlineSmall = TextStyle(
@@ -48,7 +48,7 @@ val AppTypography = Typography(
         fontWeight = FontWeight.Bold,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = (-0.2).sp
+        letterSpacing = 0.sp
     ),
     bodyLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,

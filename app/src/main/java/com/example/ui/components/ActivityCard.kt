@@ -172,8 +172,11 @@ fun PlannerActivityCard(
                             text = formatDigits(indexStr, language),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace
+                                fontFamily = FontFamily.Monospace,
+                                letterSpacing = 0.sp
                             ),
+                            maxLines = 1,
+                            softWrap = false,
                             color = if (isDone) EmeraldGreen else MaterialTheme.colorScheme.primary
                         )
                         Text(
@@ -627,10 +630,11 @@ fun TactileMetricPill(
                         text = text,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.2.sp
+                            letterSpacing = 0.sp
                         ),
                         color = contentTint,
                         maxLines = 1,
+                        softWrap = false,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
@@ -665,10 +669,11 @@ fun TactileMetricPill(
                     text = text,
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.2.sp
+                        letterSpacing = 0.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
+                    softWrap = false,
                     overflow = TextOverflow.Ellipsis
                 )
             }

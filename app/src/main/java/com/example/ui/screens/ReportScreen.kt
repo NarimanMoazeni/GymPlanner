@@ -43,6 +43,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -59,11 +60,13 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.local.entity.ActivityEntity
@@ -117,8 +120,8 @@ fun ReportScreen(
     var showEditHeightDialog by remember { mutableStateOf(false) }
     var showFullCalendarDialog by remember { mutableStateOf(false) }
 
-    // Parse weight history or use realistic reference data
-    val weightPoints = remember(weightHistoryRaw, userWeightKg) {
+    // Parse weight history strictly from real user data
+    val weightPoints = remember(weightHistoryRaw) {
         val parsed = mutableListOf<WeightLogPoint>()
         if (weightHistoryRaw.isNotBlank()) {
             val entries = weightHistoryRaw.split(";")
@@ -134,40 +137,26 @@ fun ReportScreen(
                 }
             }
         }
-        if (parsed.isEmpty()) {
-            // Reference baseline matching screenshot
-            listOf(
-                WeightLogPoint("2026-05-15", 65.5f, if (language == AppLanguage.PERSIAN) "اردیبهشت" else "May"),
-                WeightLogPoint("2026-06-20", 68.0f, if (language == AppLanguage.PERSIAN) "خرداد" else "Jun"),
-                WeightLogPoint("2026-07-10", 66.2f, if (language == AppLanguage.PERSIAN) "تیر" else "Jul"),
-                WeightLogPoint("2026-08-05", 69.0f, if (language == AppLanguage.PERSIAN) "مرداد" else "Aug"),
-                WeightLogPoint("2026-08-25", 67.5f, if (language == AppLanguage.PERSIAN) "شهریور" else "Aug"),
-                WeightLogPoint("2026-09-09", userWeightKg, if (language == AppLanguage.PERSIAN) "شهریور" else "Sep")
-            )
-        } else {
-            parsed
-        }
+        parsed
     }
 
     val currentWeight = weightPoints.lastOrNull()?.weight ?: userWeightKg
-    val heaviestWeight = weightPoints.maxOfOrNull { it.weight } ?: userWeightKg
-    val lightestWeight = weightPoints.minOfOrNull { it.weight } ?: userWeightKg
+    val heaviestWeight = weightPoints.maxOfOrNull { it.weight } ?: currentWeight
+    val lightestWeight = weightPoints.minOfOrNull { it.weight } ?: currentWeight
 
-    // Top Summary metrics
-    val completedSessionsCount = allSessions.count { it.isCompleted }.let { if (it == 0) 12 else it }
-    val totalMinutes = if (allSessions.isNotEmpty()) {
-        val calculated = allSessions.sumOf { s ->
+    // Top Summary metrics - calculated strictly from real completed workout sessions
+    val completedSessions = remember(allSessions) { allSessions.filter { it.isCompleted } }
+    val completedSessionsCount = completedSessions.size
+    val totalMinutes = remember(completedSessions) {
+        completedSessions.sumOf { s ->
             if (s.completedAt != null && s.completedAt > s.startedAt) {
                 ((s.completedAt - s.startedAt) / 60000L).toInt()
             } else {
-                35
+                0
             }
         }
-        if (calculated > 0) calculated else 480
-    } else {
-        480 // 8 hours baseline
     }
-    val totalKcal = (totalMinutes * 7.5f).toInt().coerceAtLeast(3600)
+    val totalKcal = (totalMinutes * 7.5f).toInt()
 
     LazyColumn(
         modifier = modifier
@@ -227,6 +216,19 @@ fun ReportScreen(
             }
         }
 
+        // First-Time Body Stats Setup Card (if no weight entries exist yet)
+        if (weightPoints.isEmpty()) {
+            item {
+                BodyStatsSetupCard(
+                    initialHeight = userHeightCm,
+                    onSaveStats = { height, weight ->
+                        onUpdateHeight(height)
+                        onLogWeight(weight)
+                    }
+                )
+            }
+        }
+
         // Section B: History & Streak Card
         item {
             HistoryStreakCard(
@@ -276,29 +278,31 @@ fun ReportScreen(
             }
         }
 
-        // Section C: Weight Tracker & Custom Line Chart
-        item {
-            WeightTrackerCard(
-                currentWeight = currentWeight,
-                heaviestWeight = heaviestWeight,
-                lightestWeight = lightestWeight,
-                weightPoints = weightPoints,
-                weightUnit = weightUnit,
-                onLogClick = { showLogWeightDialog = true }
-            )
-        }
+        // Section C: Weight Tracker & Custom Line Chart (rendered when weight points exist)
+        if (weightPoints.isNotEmpty()) {
+            item {
+                WeightTrackerCard(
+                    currentWeight = currentWeight,
+                    heaviestWeight = heaviestWeight,
+                    lightestWeight = lightestWeight,
+                    weightPoints = weightPoints,
+                    weightUnit = weightUnit,
+                    onLogClick = { showLogWeightDialog = true }
+                )
+            }
 
-        // Section D: BMI Card with Multi-Segment Spectrum Bar
-        item {
-            BmiSpectrumCard(
-                weightKg = currentWeight,
-                heightCm = userHeightCm,
-                onEditHeight = { showEditHeightDialog = true }
-            )
+            // Section D: BMI Card with Multi-Segment Spectrum Bar
+            item {
+                BmiSpectrumCard(
+                    weightKg = currentWeight,
+                    heightCm = userHeightCm,
+                    onEditHeight = { showEditHeightDialog = true }
+                )
+            }
         }
 
         // Bottom space for scrolling above dock
-        item { Spacer(modifier = Modifier.height(84.dp)) }
+        item { Spacer(modifier = Modifier.height(90.dp)) }
     }
 
     // Dialog: Log New Weight
@@ -324,6 +328,244 @@ fun ReportScreen(
                 showEditHeightDialog = false
             }
         )
+    }
+}
+
+@Composable
+private fun BodyStatsSetupCard(
+    initialHeight: Float,
+    onSaveStats: (height: Float, weight: Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val strings = LocalAppStrings.current
+    val language = LocalCurrentLanguage.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    var heightVal by remember { mutableFloatStateOf(if (initialHeight in 100f..250f) initialHeight else 175f) }
+    var weightVal by remember { mutableFloatStateOf(70.0f) }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .tactileCard(shape = RoundedCornerShape(24.dp), elevation = 4.dp)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Header
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .background(ElectricIndigo.copy(alpha = if (isDark) 0.25f else 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FitnessCenter,
+                    contentDescription = null,
+                    tint = ElectricIndigo,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = strings.reportSetupTitle,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = strings.reportSetupDesc,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Stepper 1: Height (cm)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(if (isDark) Color(0xFF1E2235) else Color(0xFFF1F3F9))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = strings.reportSetupHeightLabel,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                        .clickable {
+                            if (heightVal > 100f) heightVal -= 1f
+                        }
+                        .testTag("btn_setup_height_minus"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "−",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "${formatDigits(heightVal.toInt(), language)} cm",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                        .clickable {
+                            if (heightVal < 250f) heightVal += 1f
+                        }
+                        .testTag("btn_setup_height_plus"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
+        // Stepper 2: Initial Weight (kg)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(if (isDark) Color(0xFF1E2235) else Color(0xFFF1F3F9))
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = strings.reportSetupWeightLabel,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                        .clickable {
+                            if (weightVal > 30f) weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
+                        }
+                        .testTag("btn_setup_weight_minus"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "−",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "${formatDigits(String.format(Locale.US, "%.1f", weightVal), language)} kg",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                        .clickable {
+                            if (weightVal < 250f) weightVal = (weightVal + 0.5f).coerceAtMost(250f)
+                        }
+                        .testTag("btn_setup_weight_plus"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "+",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+
+        // 50.dp Tactile Action Button
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .tactileButton(
+                    onClick = { onSaveStats(heightVal, weightVal) },
+                    shape = RoundedCornerShape(16.dp),
+                    baseColor = ElectricIndigo,
+                    lipColor = Color(0xFF3730A3)
+                )
+                .testTag("btn_save_body_stats"),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = strings.reportSetupBtn,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = Color.White
+                )
+            }
+        }
     }
 }
 
@@ -366,8 +608,11 @@ private fun SummaryMetricCard(
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Black,
                 fontFamily = FontFamily.SansSerif,
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                letterSpacing = 0.sp
             ),
+            maxLines = 1,
+            softWrap = false,
             color = MaterialTheme.colorScheme.onSurface
         )
 
@@ -514,8 +759,11 @@ private fun HistoryStreakCard(
                                 text = formatDigits(dateInfo?.dayOfMonth ?: (20 + i), language),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.SemiBold,
-                                    fontSize = 11.sp
+                                    fontSize = 11.sp,
+                                    letterSpacing = 0.sp
                                 ),
+                                maxLines = 1,
+                                softWrap = false,
                                 color = if (isToday) ElectricIndigo else MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -614,8 +862,11 @@ private fun WeightTrackerCard(
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Black,
                             fontFamily = FontFamily.SansSerif,
-                            fontSize = 32.sp
+                            fontSize = 32.sp,
+                            letterSpacing = 0.sp
                         ),
+                        maxLines = 1,
+                        softWrap = false,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -638,7 +889,12 @@ private fun WeightTrackerCard(
                     )
                     Text(
                         text = "${formatDigits(String.format(Locale.US, "%.1f", heaviestWeight), language)} $unitLabel",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -651,7 +907,12 @@ private fun WeightTrackerCard(
                     )
                     Text(
                         text = "${formatDigits(String.format(Locale.US, "%.1f", lightestWeight), language)} $unitLabel",
-                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -679,193 +940,249 @@ private fun CustomWeightLineChart(
     val primaryLineColor = ElectricIndigo
     val gridLineColor = if (isDark) Color(0xFF2A2E44) else Color(0xFFE5E7EB)
 
-    val minVal = 61.0f
-    val maxVal = 70.0f
-
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .padding(top = 10.dp)
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
-            val bottomPadding = 30.dp.toPx()
-            val leftPadding = 36.dp.toPx()
-            val chartWidth = width - leftPadding - 12.dp.toPx()
-            val chartHeight = height - bottomPadding - 16.dp.toPx()
-
-            // Draw Y-axis guide lines & labels
-            val ySteps = listOf(61f, 63f, 65f, 67f, 69f)
-            ySteps.forEach { yVal ->
-                val ratio = (yVal - minVal) / (maxVal - minVal)
-                val yPos = (height - bottomPadding) - ratio * chartHeight
-
-                // Dashed horizontal grid line
-                drawLine(
-                    color = gridLineColor,
-                    start = Offset(leftPadding, yPos),
-                    end = Offset(width, yPos),
-                    strokeWidth = 1.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                )
-            }
-
-            if (weightPoints.size >= 2) {
-                // Compute coordinates
-                val points = weightPoints.mapIndexed { index, pt ->
-                    val x = leftPadding + (index.toFloat() / (weightPoints.size - 1)) * chartWidth
-                    val yRatio = ((pt.weight - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
-                    val y = (height - bottomPadding) - yRatio * chartHeight
-                    Offset(x, y)
-                }
-
-                // Construct smooth spline path
-                val strokePath = Path().apply {
-                    moveTo(points[0].x, points[0].y)
-                    for (i in 0 until points.size - 1) {
-                        val p0 = points[i]
-                        val p1 = points[i + 1]
-                        val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2f, p0.y)
-                        val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2f, p1.y)
-                        cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
-                    }
-                }
-
-                // Construct fill path
-                val fillPath = Path().apply {
-                    addPath(strokePath)
-                    lineTo(points.last().x, height - bottomPadding)
-                    lineTo(points.first().x, height - bottomPadding)
-                    close()
-                }
-
-                // Draw semi-transparent gradient fill
-                drawPath(
-                    path = fillPath,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            primaryLineColor.copy(alpha = 0.35f),
-                            primaryLineColor.copy(alpha = 0.05f),
-                            Color.Transparent
-                        ),
-                        startY = 0f,
-                        endY = height - bottomPadding
-                    )
-                )
-
-                // Draw curved line stroke
-                drawPath(
-                    path = strokePath,
-                    color = primaryLineColor,
-                    style = Stroke(width = 3.5.dp.toPx(), cap = StrokeCap.Round)
-                )
-
-                // Draw points
-                points.forEachIndexed { idx, pt ->
-                    val isLast = idx == points.size - 1
-                    if (isLast) {
-                        // Highlighted latest point with double ring
-                        drawCircle(
-                            color = primaryLineColor.copy(alpha = 0.25f),
-                            radius = 10.dp.toPx(),
-                            center = pt
-                        )
-                        drawCircle(
-                            color = primaryLineColor,
-                            radius = 5.dp.toPx(),
-                            center = pt
-                        )
-                        drawCircle(
-                            color = Color.White,
-                            radius = 2.5.dp.toPx(),
-                            center = pt
-                        )
-                    } else {
-                        drawCircle(
-                            color = primaryLineColor,
-                            radius = 3.5.dp.toPx(),
-                            center = pt
-                        )
-                        drawCircle(
-                            color = Color.White,
-                            radius = 1.5.dp.toPx(),
-                            center = pt
-                        )
-                    }
-                }
-            }
+    // Dynamic min/max calculation based strictly on user's real weight points
+    val (minVal, maxVal) = remember(weightPoints, currentWeight) {
+        if (weightPoints.isEmpty()) {
+            val base = if (currentWeight > 0f) currentWeight else 70f
+            (base - 5f).coerceAtLeast(0f) to (base + 5f)
+        } else if (weightPoints.size == 1) {
+            val w = weightPoints.first().weight
+            (w - 4f).coerceAtLeast(0f) to (w + 4f)
+        } else {
+            val minPt = weightPoints.minOf { it.weight }
+            val maxPt = weightPoints.maxOf { it.weight }
+            val diff = (maxPt - minPt).coerceAtLeast(4f)
+            val pad = diff * 0.2f
+            (minPt - pad).coerceAtLeast(0f) to (maxPt + pad)
         }
+    }
 
-        // Y-Axis Static Text Labels overlay (61, 65, 69)
-        Column(
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .height(170.dp)
-                .padding(bottom = 28.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = formatDigits("69", language),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = formatDigits("65", language),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = formatDigits("61", language),
-                style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        // X-Axis Month Labels
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Box(
+            modifier = modifier
                 .fillMaxWidth()
-                .padding(start = 38.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
+                .height(200.dp)
+                .padding(top = 10.dp)
         ) {
-            val displayLabels = if (weightPoints.size >= 3) {
-                listOf(
-                    weightPoints.first().label,
-                    weightPoints[weightPoints.size / 2].label,
-                    weightPoints.last().label
-                )
-            } else {
-                listOf("May", "Jul", "Sep")
+            val midVal = (minVal + maxVal) / 2f
+            val ySteps = listOf(minVal, midVal, maxVal)
+
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val width = size.width
+                val height = size.height
+                val bottomPadding = 30.dp.toPx()
+                val leftPadding = 42.dp.toPx()
+                val chartWidth = width - leftPadding - 16.dp.toPx()
+                val chartHeight = height - bottomPadding - 16.dp.toPx()
+
+                // Draw Y-axis guide lines
+                ySteps.forEach { yVal ->
+                    val ratio = ((yVal - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
+                    val yPos = (height - bottomPadding) - ratio * chartHeight
+
+                    // Dashed horizontal grid line
+                    drawLine(
+                        color = gridLineColor,
+                        start = Offset(leftPadding, yPos),
+                        end = Offset(width, yPos),
+                        strokeWidth = 1.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    )
+                }
+
+                if (weightPoints.size == 1) {
+                    // With 1 point: Display a single clean point with active double ring
+                    val pt = weightPoints.first()
+                    val yRatio = ((pt.weight - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
+                    val centerOffset = Offset(
+                        x = leftPadding + chartWidth / 2f,
+                        y = (height - bottomPadding) - yRatio * chartHeight
+                    )
+
+                    drawCircle(
+                        color = primaryLineColor.copy(alpha = 0.25f),
+                        radius = 12.dp.toPx(),
+                        center = centerOffset
+                    )
+                    drawCircle(
+                        color = primaryLineColor,
+                        radius = 6.dp.toPx(),
+                        center = centerOffset
+                    )
+                    drawCircle(
+                        color = Color.White,
+                        radius = 3.dp.toPx(),
+                        center = centerOffset
+                    )
+                } else if (weightPoints.size >= 2) {
+                    // Compute coordinates
+                    val points = weightPoints.mapIndexed { index, pt ->
+                        val x = leftPadding + (index.toFloat() / (weightPoints.size - 1)) * chartWidth
+                        val yRatio = ((pt.weight - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
+                        val y = (height - bottomPadding) - yRatio * chartHeight
+                        Offset(x, y)
+                    }
+
+                    // Construct smooth spline path
+                    val strokePath = Path().apply {
+                        moveTo(points[0].x, points[0].y)
+                        for (i in 0 until points.size - 1) {
+                            val p0 = points[i]
+                            val p1 = points[i + 1]
+                            val controlPoint1 = Offset(p0.x + (p1.x - p0.x) / 2f, p0.y)
+                            val controlPoint2 = Offset(p0.x + (p1.x - p0.x) / 2f, p1.y)
+                            cubicTo(controlPoint1.x, controlPoint1.y, controlPoint2.x, controlPoint2.y, p1.x, p1.y)
+                        }
+                    }
+
+                    // Construct fill path
+                    val fillPath = Path().apply {
+                        addPath(strokePath)
+                        lineTo(points.last().x, height - bottomPadding)
+                        lineTo(points.first().x, height - bottomPadding)
+                        close()
+                    }
+
+                    // Draw semi-transparent gradient fill
+                    drawPath(
+                        path = fillPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                primaryLineColor.copy(alpha = 0.35f),
+                                primaryLineColor.copy(alpha = 0.05f),
+                                Color.Transparent
+                            ),
+                            startY = 0f,
+                            endY = height - bottomPadding
+                        )
+                    )
+
+                    // Draw curved line stroke
+                    drawPath(
+                        path = strokePath,
+                        color = primaryLineColor,
+                        style = Stroke(width = 3.5.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    // Draw points
+                    points.forEachIndexed { idx, pt ->
+                        val isLast = idx == points.size - 1
+                        if (isLast) {
+                            // Highlighted latest point with double ring
+                            drawCircle(
+                                color = primaryLineColor.copy(alpha = 0.25f),
+                                radius = 10.dp.toPx(),
+                                center = pt
+                            )
+                            drawCircle(
+                                color = primaryLineColor,
+                                radius = 5.dp.toPx(),
+                                center = pt
+                            )
+                            drawCircle(
+                                color = Color.White,
+                                radius = 2.5.dp.toPx(),
+                                center = pt
+                            )
+                        } else {
+                            drawCircle(
+                                color = primaryLineColor,
+                                radius = 3.5.dp.toPx(),
+                                center = pt
+                            )
+                            drawCircle(
+                                color = Color.White,
+                                radius = 1.5.dp.toPx(),
+                                center = pt
+                            )
+                        }
+                    }
+                }
             }
 
-            displayLabels.forEach { label ->
+            // Dynamic Y-Axis Labels overlay
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .height(170.dp)
+                    .padding(bottom = 28.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    text = formatDigits(String.format(Locale.US, "%.0f", maxVal), language),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, letterSpacing = 0.sp),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = formatDigits(String.format(Locale.US, "%.0f", midVal), language),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, letterSpacing = 0.sp),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = formatDigits(String.format(Locale.US, "%.0f", minVal), language),
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, letterSpacing = 0.sp),
+                    maxLines = 1,
+                    softWrap = false,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
 
-        // Active Tooltip for latest point: e.g. "67.0"
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = (-8).dp, y = 20.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(ElectricIndigo)
-                .padding(horizontal = 8.dp, vertical = 3.dp)
-        ) {
-            Text(
-                text = formatDigits(String.format(Locale.US, "%.1f", currentWeight), language),
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            )
+            // Dynamic X-Axis Date/Month Labels
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .fillMaxWidth()
+                    .padding(start = 42.dp),
+                horizontalArrangement = if (weightPoints.size <= 1) Arrangement.Center else Arrangement.SpaceBetween
+            ) {
+                val displayLabels = when {
+                    weightPoints.isEmpty() -> emptyList()
+                    weightPoints.size == 1 -> listOf(weightPoints.first().label)
+                    weightPoints.size == 2 -> listOf(weightPoints.first().label, weightPoints.last().label)
+                    else -> listOf(
+                        weightPoints.first().label,
+                        weightPoints[weightPoints.size / 2].label,
+                        weightPoints.last().label
+                    )
+                }
+
+                displayLabels.forEach { label ->
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp, letterSpacing = 0.sp),
+                        maxLines = 1,
+                        softWrap = false,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Active Tooltip for latest point: e.g. "67.0"
+            if (weightPoints.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .align(if (weightPoints.size == 1) Alignment.TopCenter else Alignment.TopEnd)
+                        .offset(x = if (weightPoints.size == 1) 0.dp else (-8).dp, y = 14.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(ElectricIndigo)
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = formatDigits(String.format(Locale.US, "%.1f", currentWeight), language),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
+            }
         }
     }
 }
@@ -930,7 +1247,12 @@ private fun BmiSpectrumCard(
             ) {
                 Text(
                     text = "${strings.reportHeightLabel}: ${formatDigits(heightCm.toInt(), language)} cm",
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Icon(
@@ -953,8 +1275,11 @@ private fun BmiSpectrumCard(
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Black,
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = 32.sp
+                    fontSize = 32.sp,
+                    letterSpacing = 0.sp
                 ),
+                maxLines = 1,
+                softWrap = false,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
@@ -1034,66 +1359,70 @@ private fun BmiSpectrumBar(
         ((segIndex + intraFraction) / 6.0f).coerceIn(0f, 1f)
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        // Pointer arrow above the bar
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(14.dp)
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                val arrowX = size.width * pointerRatio
-                val arrowHeight = size.height
-                val arrowWidth = 10.dp.toPx()
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            // Pointer arrow above the bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(14.dp)
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val arrowX = size.width * pointerRatio
+                    val arrowHeight = size.height
+                    val arrowWidth = 10.dp.toPx()
 
-                val arrowPath = Path().apply {
-                    moveTo(arrowX, arrowHeight) // bottom point pointing at the bar
-                    lineTo(arrowX - arrowWidth / 2f, 0f)
-                    lineTo(arrowX + arrowWidth / 2f, 0f)
-                    close()
+                    val arrowPath = Path().apply {
+                        moveTo(arrowX, arrowHeight) // bottom point pointing at the bar
+                        lineTo(arrowX - arrowWidth / 2f, 0f)
+                        lineTo(arrowX + arrowWidth / 2f, 0f)
+                        close()
+                    }
+
+                    drawPath(
+                        path = arrowPath,
+                        color = if (isDark) Color.White else Color(0xFF171717)
+                    )
                 }
-
-                drawPath(
-                    path = arrowPath,
-                    color = if (isDark) Color.White else Color(0xFF171717)
-                )
             }
-        }
 
-        Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
-        // Segmented Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(12.dp)
-                .clip(RoundedCornerShape(6.dp)),
-            horizontalArrangement = Arrangement.spacedBy(1.5.dp)
-        ) {
-            segmentColors.forEach { color ->
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxSize()
-                        .background(color)
-                )
+            // Segmented Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp)),
+                horizontalArrangement = Arrangement.spacedBy(1.5.dp)
+            ) {
+                segmentColors.forEach { color ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxSize()
+                            .background(color)
+                    )
+                }
             }
-        }
 
-        Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-        // Numbers labeled below: 15, 16, 18.5, 25, 30, 35, 40
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            val labels = listOf("15", "16", "18.5", "25", "30", "35", "40")
-            labels.forEach { num ->
-                Text(
-                    text = formatDigits(num, language),
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            // Numbers labeled below: 15, 16, 18.5, 25, 30, 35, 40
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val labels = listOf("15", "16", "18.5", "25", "30", "35", "40")
+                labels.forEach { num ->
+                    Text(
+                        text = formatDigits(num, language),
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp, letterSpacing = 0.sp),
+                        maxLines = 1,
+                        softWrap = false,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }

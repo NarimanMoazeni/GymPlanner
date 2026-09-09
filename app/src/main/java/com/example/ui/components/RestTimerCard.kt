@@ -164,10 +164,12 @@ fun RestTimerCard(
                             text = formatDigits(timeFormatted, language),
                             style = MaterialTheme.typography.headlineMedium.copy(
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 2.sp,
+                                letterSpacing = 0.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontSize = 22.sp
                             ),
+                            maxLines = 1,
+                            softWrap = false,
                             color = if (isRunning && secondsLeft > 0) accentAmber else MaterialTheme.colorScheme.onSurface
                         )
                     }

@@ -37,7 +37,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -52,7 +51,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,12 +64,19 @@ import com.example.data.local.entity.WorkoutSessionEntity
 import com.example.data.model.ActivityType
 import com.example.data.model.WeightUnit
 import com.example.ui.AppScreen
+import com.example.ui.components.FramedSectionHeader
 import com.example.ui.components.WeeklyDayBar
 import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
+import com.example.ui.theme.SleekIndigo
+import com.example.ui.theme.tactileButton
+import com.example.ui.theme.tactileCard
+import com.example.ui.theme.tactileInset
 import com.example.util.PersianDateHelper
 
 @Composable
@@ -91,6 +99,8 @@ fun HomeScreen(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val todayDateInfo = PersianDateHelper.getTodayDateInfo(language)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
 
     val todayDayEntity = workoutDays.find { it.dayOfWeek == todayWeekIndex }
     val isTodayTraining = todayDayEntity?.isTrainingDay == true
@@ -109,82 +119,108 @@ fun HomeScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 24.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Top Header: User Greeting & Date
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // Top Identity Bento Card: User Avatar, Greeting, Training Status Dot & Date
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                .padding(16.dp)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // User Avatar Circle
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        .border(1.5.dp, KineticGreen.copy(alpha = 0.5f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = profile.name.take(1),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = KineticGreen
-                    )
-                }
-
-                Column {
-                    Text(
-                        text = "سلام، ${profile.name}!",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = if (isTodayTraining) "امروز روز تمرین است" else "امروز روز استراحت و ریکاوری است",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            // Date Badge
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                .padding(horizontal = 10.dp, vertical = 6.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarMonth,
-                        contentDescription = null,
-                        tint = KineticGreen,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Text(
-                        text = todayDateInfo.dayOfWeekName,
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    // Avatar Squircle with crisp rim
+                    Box(
+                        modifier = Modifier
+                            .size(50.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(accentColor.copy(alpha = if (isDark) 0.20f else 0.12f))
+                            .border(1.5.dp, accentColor, RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = profile.name.take(1),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = accentColor
+                        )
+                    }
+
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            text = "سلام، ${profile.name}!",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // Micro-dot indicator for today's status (Training vs Rest)
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isTodayTraining) EmeraldGreen else MaterialTheme.colorScheme.outline)
+                            )
+                            Text(
+                                text = if (isTodayTraining) "امروز روز تمرین است" else "امروز روز استراحت و ریکاوری است",
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                // Date Badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = todayDateInfo.dayOfWeekName,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             }
         }
 
-        // 7-Day Horizontal Bar
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = "برنامه این هفته",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
+        // 7-Day Horizontal Bar Section
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            FramedSectionHeader(
+                title = "برنامه این هفته",
+                badgeText = "${formatDigits(plannedTrainingDaysCount, language)} روز تمرین",
+                actionText = "مشاهده تقویم",
+                onActionClick = { onNavigate(AppScreen.PLANNER) }
             )
             WeeklyDayBar(
                 selectedDayIndex = todayWeekIndex,
@@ -213,27 +249,15 @@ fun HomeScreen(
             )
         }
 
-        // Today's Activity Checklist
+        // Today's Activity Checklist Section
         if (todayActivities.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "فعالیت‌های امروز (${formatDigits(todayActivities.size, language)})",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Text(
-                        text = "مشاهده جزئیات",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = KineticGreen,
-                        modifier = Modifier.clickable { onNavigate(AppScreen.PLANNER) }
-                    )
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                FramedSectionHeader(
+                    title = "فعالیت‌های امروز",
+                    badgeText = "${formatDigits(todayActivities.size, language)} حرکت",
+                    actionText = "مشاهده جزئیات",
+                    onActionClick = { onNavigate(AppScreen.PLANNER) }
+                )
 
                 todayActivities.forEachIndexed { index, act ->
                     val isDone = act.id in completedActivityIds
@@ -248,7 +272,7 @@ fun HomeScreen(
             }
         }
 
-        // Weekly Summary Card & User Goal
+        // Athletic Mission Card (Weekly Summary & User Goal)
         WeeklySummaryCard(
             weeklyGoal = weeklyGoal,
             totalPlannedDays = plannedTrainingDaysCount,
@@ -258,7 +282,7 @@ fun HomeScreen(
             }
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
     }
 
     if (showEditGoalDialog) {
@@ -296,8 +320,8 @@ fun HomeScreen(
                         showEditGoalDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = KineticGreen,
-                        contentColor = Color(0xFF052E16)
+                        containerColor = accentColor,
+                        contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -324,14 +348,19 @@ private fun TodayTrainingHeroCard(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val activeBrand = if (isDark) SleekIndigo else ElectricIndigo
+    val emerald = EmeraldGreen
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .border(1.5.dp, KineticGreen.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-            .padding(20.dp),
+            .tactileCard(
+                shape = RoundedCornerShape(24.dp),
+                borderColor = activeBrand.copy(alpha = 0.40f),
+                elevation = 8.dp
+            )
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -348,12 +377,12 @@ private fun TodayTrainingHeroCard(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(KineticGreen)
+                            .background(emerald)
                     )
                     Text(
                         text = "برنامه امروز",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = KineticGreen
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                        color = emerald
                     )
                 }
 
@@ -361,7 +390,10 @@ private fun TodayTrainingHeroCard(
 
                 Text(
                     text = focusName,
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
@@ -376,69 +408,106 @@ private fun TodayTrainingHeroCard(
 
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(KineticGreen.copy(alpha = 0.15f)),
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(activeBrand.copy(alpha = if (isDark) 0.20f else 0.12f))
+                    .border(1.dp, activeBrand.copy(alpha = 0.35f), RoundedCornerShape(14.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.FitnessCenter,
                     contentDescription = null,
-                    tint = KineticGreen
+                    tint = activeBrand,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
 
-        // Progress Bar
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        // Rounded Capsule Pill Progress Bar with bold percentage badge
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "${formatDigits(completedActivities, language)} از ${formatDigits(totalActivities, language)} فعالیت انجام شده",
-                    style = MaterialTheme.typography.labelSmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    text = "${formatDigits((progress * 100).toInt(), language)}٪",
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                    color = KineticGreen
-                )
+
+                // Bold percentage badge
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(emerald.copy(alpha = 0.15f))
+                        .border(1.dp, emerald.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "${formatDigits((progress * 100).toInt(), language)}٪",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        color = emerald
+                    )
+                }
             }
 
-            LinearProgressIndicator(
-                progress = { progress },
+            // Capsule track & fill
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(CircleShape),
-                color = KineticGreen,
-                trackColor = MaterialTheme.colorScheme.surfaceContainerLowest
-            )
+                    .height(10.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(progress.coerceIn(0f, 1f))
+                        .height(10.dp)
+                        .clip(CircleShape)
+                        .background(emerald)
+                )
+            }
         }
 
-        // Start Workout Button
-        Button(
-            onClick = onStartWorkout,
+        // Start Workout Button: Raised Tactile Button (54dp height)
+        val btnBase = if (isDark) emerald else activeBrand
+        val btnLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
+                .height(54.dp)
+                .tactileButton(
+                    onClick = onStartWorkout,
+                    shape = RoundedCornerShape(16.dp),
+                    baseColor = btnBase,
+                    lipColor = btnLip,
+                    borderColor = btnBase.copy(alpha = 0.5f)
+                )
                 .testTag("btn_start_workout_home"),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            )
+            contentAlignment = Alignment.Center
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(imageVector = Icons.Default.PlayArrow, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
                 Text(
                     text = if (completedActivities > 0) "ادامه تمرین امروز" else strings.heroStartCta,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.SansSerif
+                    ),
+                    color = Color.White
                 )
             }
         }
@@ -452,11 +521,12 @@ private fun RestDayHeroCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .tactileCard(
+                shape = RoundedCornerShape(24.dp),
+                elevation = 4.dp
+            )
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -466,7 +536,10 @@ private fun RestDayHeroCard(
             Column {
                 Text(
                     text = "روز استراحت و ریکاوری",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
@@ -478,29 +551,40 @@ private fun RestDayHeroCard(
 
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(14.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
-                    tint = KineticGreen
+                    tint = EmeraldGreen,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
 
-        Button(
-            onClick = onGoToPlanner,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .tactileButton(
+                    onClick = onGoToPlanner,
+                    shape = RoundedCornerShape(14.dp),
+                    baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Text("بررسی برنامه سایر روزها")
+            Text(
+                text = "بررسی برنامه سایر روزها",
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.SansSerif
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }
@@ -515,31 +599,31 @@ private fun TodayActivityRow(
 ) {
     val language = LocalCurrentLanguage.current
     val strings = LocalAppStrings.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val activeColor = if (isDark) SleekIndigo else ElectricIndigo
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .border(
-                1.dp,
-                if (isDone) KineticGreen.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                RoundedCornerShape(14.dp)
+            .tactileCard(
+                shape = RoundedCornerShape(18.dp),
+                elevation = if (isDone) 2.dp else 4.dp,
+                borderColor = if (isDone) EmeraldGreen.copy(alpha = 0.45f) else null
             )
             .clickable(onClick = onToggle)
-            .padding(14.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Completion Checkbox Circle
         Box(
             modifier = Modifier
                 .size(32.dp)
                 .clip(CircleShape)
-                .background(if (isDone) KineticGreen else MaterialTheme.colorScheme.surfaceContainerLowest)
+                .background(if (isDone) EmeraldGreen else MaterialTheme.colorScheme.surfaceContainerLowest)
                 .border(
                     1.5.dp,
-                    if (isDone) KineticGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    if (isDone) EmeraldGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                     CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -548,17 +632,20 @@ private fun TodayActivityRow(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Done",
-                    tint = Color(0xFF052E16),
+                    tint = Color.White,
                     modifier = Modifier.size(18.dp)
                 )
             }
         }
 
         // Details
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
             Text(
                 text = activity.name,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.SansSerif
+                ),
                 color = if (isDone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
             )
 
@@ -575,13 +662,18 @@ private fun TodayActivityRow(
 
             Text(
                 text = metaText,
-                style = MaterialTheme.typography.bodySmall,
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
+/**
+ * Athletic Mission Card (Weekly Summary & User Goal):
+ * - Encloses the weekly goal text inside a sunken inset panel (tactileInset)
+ * - Features an edit badge and athletic summary stats
+ */
 @Composable
 private fun WeeklySummaryCard(
     weeklyGoal: String,
@@ -590,16 +682,16 @@ private fun WeeklySummaryCard(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(20.dp))
-            .padding(18.dp)
+            .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+            .padding(16.dp)
             .testTag("weekly_goal_card"),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -613,73 +705,78 @@ private fun WeeklySummaryCard(
                 Icon(
                     imageVector = Icons.Default.TrackChanges,
                     contentDescription = null,
-                    tint = KineticGreen,
+                    tint = accentColor,
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
                     text = strings.weeklyGoalTitle,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.SansSerif
+                    ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            IconButton(
-                onClick = onEditGoal,
+            // Edit Goal Button
+            Box(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .testTag("btn_edit_weekly_goal")
+                    .size(36.dp)
+                    .tactileButton(
+                        onClick = onEditGoal,
+                        shape = RoundedCornerShape(10.dp),
+                        baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                    )
+                    .testTag("btn_edit_weekly_goal"),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = strings.editGoalTitle,
-                    tint = KineticGreen,
+                    tint = accentColor,
                     modifier = Modifier.size(16.dp)
                 )
             }
         }
 
+        // Sunken inset panel (tactileInset) for the goal readout
         if (weeklyGoal.isNotBlank()) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                border = BorderStroke(1.dp, KineticGreen.copy(alpha = 0.3f)),
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .tactileInset(shape = RoundedCornerShape(14.dp))
                     .clickable { onEditGoal() }
+                    .padding(14.dp)
             ) {
                 Text(
                     text = weeklyGoal,
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 22.sp,
-                    modifier = Modifier.padding(14.dp)
+                    lineHeight = 22.sp
                 )
             }
         } else {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .tactileInset(shape = RoundedCornerShape(14.dp))
                     .clickable { onEditGoal() }
+                    .padding(14.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null,
-                        tint = KineticGreen,
+                        tint = accentColor,
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
                         text = strings.setGoalCta,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -693,7 +790,7 @@ private fun WeeklySummaryCard(
         ) {
             Text(
                 text = "${formatDigits(totalPlannedDays, language)} روز تمرین برنامه‌ریزی شده در این هفته",
-                style = MaterialTheme.typography.labelSmall,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

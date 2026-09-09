@@ -25,12 +25,16 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +51,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.testTag
@@ -59,12 +65,19 @@ import androidx.compose.ui.unit.sp
 import com.example.data.local.AppPreferences
 import com.example.data.local.entity.UserProfileEntity
 import com.example.data.model.WeightUnit
+import com.example.ui.components.FramedSectionHeader
 import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.AmberGold
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
 import com.example.ui.theme.ThemeMode
+import com.example.ui.theme.tactileButton
+import com.example.ui.theme.tactileCard
+import com.example.ui.theme.tactileInset
 
 @Composable
 fun SettingsScreen(
@@ -82,6 +95,8 @@ fun SettingsScreen(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val clipboardManager: ClipboardManager = LocalClipboardManager.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
 
     var showEditProfileDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
@@ -94,34 +109,35 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
-            Spacer(modifier = Modifier.height(16.dp))
-
             // Header
-            Text(
-                text = strings.settingsTitle,
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = strings.settingsSubtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column {
+                Text(
+                    text = strings.settingsTitle,
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = strings.settingsSubtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
-        // Profile Card
+        // 1. Profile Bento Card with avatar gradient rim
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(20.dp))
-                    .padding(18.dp),
+                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Row(
@@ -131,49 +147,74 @@ fun SettingsScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
+                        // Avatar with vibrant dual gradient rim
                         Box(
                             modifier = Modifier
-                                .size(52.dp)
+                                .size(56.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceContainer)
-                                .border(1.5.dp, KineticGreen, CircleShape),
+                                .background(
+                                    Brush.sweepGradient(
+                                        listOf(accentColor, AmberGold, accentColor)
+                                    )
+                                )
+                                .padding(2.5.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = profile.name.take(1),
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                                color = KineticGreen
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = profile.name.take(1).ifEmpty { "U" },
+                                    style = MaterialTheme.typography.titleLarge.copy(
+                                        fontWeight = FontWeight.Black,
+                                        fontFamily = FontFamily.SansSerif
+                                    ),
+                                    color = accentColor
+                                )
+                            }
                         }
 
-                        Column {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(
                                 text = profile.name,
-                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    fontWeight = FontWeight.Black,
+                                    fontFamily = FontFamily.SansSerif
+                                ),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             val ageText = profile.age?.let { "${formatDigits(it, language)} سال" } ?: "بدون ثبت سن"
                             Text(
                                 text = "$ageText • برنامه هفتگی شخصی",
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
 
-                    IconButton(
-                        onClick = { showEditProfileDialog = true },
+                    // Raised Tactile Edit Button
+                    Box(
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                            .size(40.dp)
+                            .tactileButton(
+                                onClick = { showEditProfileDialog = true },
+                                shape = RoundedCornerShape(12.dp),
+                                baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                            )
+                            .testTag("btn_edit_profile"),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
                             contentDescription = strings.editBtn,
-                            tint = KineticGreen,
+                            tint = accentColor,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -181,35 +222,31 @@ fun SettingsScreen(
             }
         }
 
-        // Appearance & Preferences Section
+        // 2. Theme & Appearance Bento Card
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
-                    .padding(18.dp),
+                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = strings.appearanceSection,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                FramedSectionHeader(
+                    title = strings.appearanceSection,
+                    badgeText = "طرح و پوسته"
                 )
 
-                // Theme Mode Selector
+                // Theme Mode 3-way Segmented Pill Toggle
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.themeLabel,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                            .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -222,45 +259,74 @@ fun SettingsScreen(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(40.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                    .height(42.dp)
+                                    .then(
+                                        if (isSelected) {
+                                            Modifier.tactileCard(
+                                                shape = RoundedCornerShape(10.dp),
+                                                elevation = 2.dp,
+                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                            )
+                                        } else {
+                                            Modifier
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .clickable { onSetThemeMode(mode) }
+                                        }
+                                    )
                                     .clickable { onSetThemeMode(mode) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = null,
-                                        tint = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tint = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
                                         text = label,
-                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal),
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                            fontFamily = FontFamily.SansSerif
+                                        ),
+                                        color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
 
-                // Language Selector
+        // 3. Preferences Bento Card (Language, Weight Unit, Reminder)
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                FramedSectionHeader(
+                    title = "تنظیمات کاربردی",
+                    badgeText = "واحدها و زبان"
+                )
+
+                // Language Segmented Selector
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.languageLabel,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                            .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -275,33 +341,48 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(40.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                    .then(
+                                        if (isSelected) {
+                                            Modifier.tactileCard(
+                                                shape = RoundedCornerShape(10.dp),
+                                                elevation = 2.dp,
+                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                            )
+                                        } else {
+                                            Modifier
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .clickable { onSetLanguage(lang) }
+                                        }
+                                    )
                                     .clickable { onSetLanguage(lang) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = label,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                        fontFamily = FontFamily.SansSerif
+                                    ),
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
                 }
 
-                // Weight Unit Selector
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                // Weight Unit Segmented Selector
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.weightUnitLabel,
-                        style = MaterialTheme.typography.labelMedium,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                            .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -316,20 +397,36 @@ fun SettingsScreen(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(40.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                                    .then(
+                                        if (isSelected) {
+                                            Modifier.tactileCard(
+                                                shape = RoundedCornerShape(10.dp),
+                                                elevation = 2.dp,
+                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                            )
+                                        } else {
+                                            Modifier
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .clickable { onSetWeightUnit(unit) }
+                                        }
+                                    )
                                     .clickable { onSetWeightUnit(unit) },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = label,
-                                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                    style = MaterialTheme.typography.labelMedium.copy(
+                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                        fontFamily = FontFamily.SansSerif
+                                    ),
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
                 }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
 
                 // Workout Reminder Toggle
                 Row(
@@ -340,12 +437,12 @@ fun SettingsScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = strings.reminderLabel,
-                            style = MaterialTheme.typography.titleSmall,
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = strings.reminderSub,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -354,8 +451,8 @@ fun SettingsScreen(
                         checked = preferences.workoutReminderEnabled,
                         onCheckedChange = onSetReminder,
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color(0xFF052E16),
-                            checkedTrackColor = KineticGreen,
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = accentColor,
                             uncheckedThumbColor = MaterialTheme.colorScheme.outline,
                             uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerLowest
                         )
@@ -364,107 +461,136 @@ fun SettingsScreen(
             }
         }
 
-        // Local Data & Backup Management
+        // 4. Data Management Bento Card
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainer)
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(20.dp))
-                    .padding(18.dp),
+                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                Text(
-                    text = strings.backupSection,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+                FramedSectionHeader(
+                    title = strings.backupSection,
+                    badgeText = "داده‌ها و پشتیبان"
                 )
 
                 Text(
                     text = strings.backupDesc,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
                 )
 
-                // Export Backup Button
-                Button(
-                    onClick = {
-                        onExportBackup { json ->
-                            exportedJsonText = json
-                            showExportDialog = true
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                // Export Backup Tactile Button
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .tactileButton(
+                            onClick = {
+                                onExportBackup { json ->
+                                    exportedJsonText = json
+                                    showExportDialog = true
+                                }
+                            },
+                            shape = RoundedCornerShape(14.dp),
+                            baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.CloudDownload, contentDescription = null, tint = KineticGreen)
-                        Text(text = strings.backupExportBtn)
+                        Icon(imageVector = Icons.Default.CloudDownload, contentDescription = null, tint = accentColor)
+                        Text(
+                            text = strings.backupExportBtn,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
 
-                // Import Backup Button
-                Button(
-                    onClick = {
-                        importJsonInput = ""
-                        importStatusMessage = null
-                        showImportDialog = true
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                        contentColor = MaterialTheme.colorScheme.onSurface
-                    )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
+
+                // Import Backup Tactile Button
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .tactileButton(
+                            onClick = {
+                                importJsonInput = ""
+                                importStatusMessage = null
+                                showImportDialog = true
+                            },
+                            shape = RoundedCornerShape(14.dp),
+                            baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(imageVector = Icons.Default.CloudUpload, contentDescription = null, tint = KineticGreen)
-                        Text(text = strings.backupImportBtn)
+                        Icon(imageVector = Icons.Default.CloudUpload, contentDescription = null, tint = accentColor)
+                        Text(
+                            text = strings.backupImportBtn,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.SansSerif
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }
         }
 
-        // Security & Offline Guarantee Info
+        // 5. Security & Offline Guarantee Info
         item {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                    .tactileInset(shape = RoundedCornerShape(18.dp))
                     .padding(16.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = null,
-                        tint = KineticGreen,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(accentColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
                             text = strings.offlineTrustBadge,
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.titleSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.SansSerif
+                            ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = "تمامی اطلاعات، تمرینات، وزنه‌ها و جلسات شما به صورت کاملاً امن فقط در حافظه گوشی ذخیره شده و به هیچ سروری منتقل نمی‌شود.",
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 18.sp
                         )
@@ -485,7 +611,12 @@ fun SettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showEditProfileDialog = false },
-            title = { Text(strings.editBtn) },
+            title = {
+                Text(
+                    text = strings.editBtn,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -493,6 +624,7 @@ fun SettingsScreen(
                         onValueChange = { tempName = it },
                         label = { Text("نام") },
                         singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
@@ -500,6 +632,7 @@ fun SettingsScreen(
                         onValueChange = { tempAgeStr = it },
                         label = { Text("سن") },
                         singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -511,11 +644,12 @@ fun SettingsScreen(
                         showEditProfileDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                        containerColor = accentColor,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text(strings.saveToPlanBtn)
+                    Text(strings.saveToPlanBtn, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -530,7 +664,12 @@ fun SettingsScreen(
     if (showExportDialog) {
         AlertDialog(
             onDismissRequest = { showExportDialog = false },
-            title = { Text(strings.backupExportBtn) },
+            title = {
+                Text(
+                    text = strings.backupExportBtn,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
@@ -541,9 +680,9 @@ fun SettingsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                            .padding(8.dp)
+                            .padding(10.dp)
                     ) {
                         Text(
                             text = exportedJsonText,
@@ -563,11 +702,12 @@ fun SettingsScreen(
                         showExportDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                        containerColor = accentColor,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("کپی در کلیپ‌بورد")
+                    Text("کپی در کلیپ‌بورد", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
@@ -582,7 +722,12 @@ fun SettingsScreen(
     if (showImportDialog) {
         AlertDialog(
             onDismissRequest = { showImportDialog = false },
-            title = { Text(strings.backupImportBtn) },
+            title = {
+                Text(
+                    text = strings.backupImportBtn,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
@@ -599,6 +744,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .height(160.dp),
                         placeholder = { Text("{\n  \"version\": 1,\n  ...") },
+                        shape = RoundedCornerShape(12.dp),
                         textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace)
                     )
 
@@ -627,11 +773,12 @@ fun SettingsScreen(
                         }
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                        containerColor = accentColor,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
                 ) {
-                    Text("بازیابی برنامه")
+                    Text("بازیابی برنامه", fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {

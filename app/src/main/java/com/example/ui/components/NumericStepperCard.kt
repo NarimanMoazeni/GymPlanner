@@ -1,15 +1,21 @@
 package com.example.ui.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -24,7 +30,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -37,8 +42,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -46,7 +56,11 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
+import com.example.ui.theme.tactileCard
+import com.example.ui.theme.tactileInset
 
 @Composable
 fun NumericStepperCard(
@@ -57,8 +71,8 @@ fun NumericStepperCard(
     minValue: Double = 0.0,
     maxValue: Double = 500.0,
     unitSuffix: String = "",
-    dotColor: Color = KineticGreen,
-    accentValueColor: Color = MaterialTheme.colorScheme.onSurface,
+    dotColor: Color = EmeraldGreen,
+    accentValueColor: Color? = null,
     quickPresets: List<Pair<String, Double>> = emptyList(),
     presetLabel: String = "",
     testTag: String = "numeric_stepper",
@@ -75,17 +89,17 @@ fun NumericStepperCard(
         value.toLong().toString()
     }
 
+    val resolvedAccent = accentValueColor ?: MaterialTheme.colorScheme.primary
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainer)
-            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+            .tactileCard(shape = RoundedCornerShape(20.dp))
             .padding(16.dp)
             .testTag(testTag),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Top Row: Title + Steppers
+        // Top Row: Title + 46.dp Physical Steppers and Sunken Display Well
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -104,44 +118,35 @@ fun NumericStepperCard(
                 )
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            // Stepper Controls (- Value +)
+            // Stepper Controls: (- [Value Display Well] +)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Minus Button
-                IconButton(
+                // 46.dp Tactile Minus Button
+                TactileStepperButton(
+                    icon = Icons.Default.Remove,
+                    contentDescription = "Decrease",
                     onClick = {
                         val current = value.toDouble()
                         val newVal = (current - step).coerceIn(minValue, maxValue)
                         onValueChange(newVal)
-                    },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = "Decrease",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                    }
+                )
 
-                // Value Display Box (Clickable for Manual Input)
+                // Sunken Digital Readout Well (tactileInset with large bold monospace font)
                 Box(
                     modifier = Modifier
-                        .widthIn(min = 68.dp)
-                        .height(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerLowest)
+                        .widthIn(min = 76.dp)
+                        .height(46.dp)
+                        .tactileInset(shape = RoundedCornerShape(12.dp))
                         .clickable { showManualInputDialog = true }
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
@@ -151,76 +156,59 @@ fun NumericStepperCard(
                         if (unitSuffix.isNotBlank()) {
                             Text(
                                 text = unitSuffix,
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Text(
                             text = formatDigits(displayStr, language),
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            color = accentValueColor
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.Monospace,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = resolvedAccent
                         )
                     }
                 }
 
-                // Plus Button
-                IconButton(
+                // 46.dp Tactile Plus Button
+                TactileStepperButton(
+                    icon = Icons.Default.Add,
+                    contentDescription = "Increase",
                     onClick = {
                         val current = value.toDouble()
                         val newVal = (current + step).coerceIn(minValue, maxValue)
                         onValueChange(newVal)
-                    },
-                    modifier = Modifier
-                        .size(44.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Increase",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                    }
+                )
             }
         }
 
-        // Quick Presets Row (if provided)
+        // Quick Presets Row (Tactile Chips with Elevated Selected State)
         if (quickPresets.isNotEmpty()) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .horizontalScroll(rememberScrollState()),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (presetLabel.isNotBlank()) {
                     Text(
                         text = presetLabel,
-                        style = MaterialTheme.typography.labelSmall,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
                 quickPresets.forEach { (chipText, chipVal) ->
                     val isSelected = kotlin.math.abs(value.toDouble() - chipVal) < 0.05
-                    val chipBg = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh
-                    val chipTextColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
-
-                    Box(
-                        modifier = Modifier
-                            .height(30.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(chipBg)
-                            .clickable { onValueChange(chipVal) }
-                            .padding(horizontal = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = formatDigits(chipText, language),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = chipTextColor
-                        )
-                    }
+                    TactilePresetChip(
+                        text = formatDigits(chipText, language),
+                        isSelected = isSelected,
+                        onClick = { onValueChange(chipVal) }
+                    )
                 }
             }
         }
@@ -266,7 +254,7 @@ fun NumericStepperCard(
                             showManualInputDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Text(strings.saveToPlanBtn)
                 }
@@ -277,5 +265,146 @@ fun NumericStepperCard(
                 }
             }
         )
+    }
+}
+
+/**
+ * 46.dp Physical Tactile Stepper Button (+ / -) with 3D Lip and Spring Press
+ */
+@Composable
+private fun TactileStepperButton(
+    icon: ImageVector,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    val pressOffsetY by animateDpAsState(
+        targetValue = if (isPressed) 2.dp else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "stepper_press"
+    )
+    val bottomLipHeight by animateDpAsState(
+        targetValue = if (isPressed) 0.5.dp else 2.5.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "stepper_lip"
+    )
+
+    val faceColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surface
+    val lipColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerLowest else Color(0xFFCBD5E1)
+    val borderColor = if (isDark) MaterialTheme.colorScheme.outline.copy(alpha = 0.45f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.75f)
+
+    Box(
+        modifier = modifier
+            .size(46.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(lipColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick
+            )
+            .padding(bottom = bottomLipHeight)
+    ) {
+        Box(
+            modifier = Modifier
+                .offset(y = pressOffsetY)
+                .size(width = 46.dp, height = (46 - 2.5).dp)
+                .clip(RoundedCornerShape(13.dp))
+                .background(faceColor)
+                .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(13.dp))
+                .drawBehind {
+                    val hl = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.60f)
+                    drawLine(
+                        color = hl,
+                        start = Offset(x = 6f, y = 1.5f),
+                        end = Offset(x = size.width - 6f, y = 1.5f),
+                        strokeWidth = 2f
+                    )
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+/**
+ * Tactile Quick Preset Chip with elevated selected state using primary / emerald
+ */
+@Composable
+private fun TactilePresetChip(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    val pressOffsetY by animateDpAsState(
+        targetValue = if (isPressed) 1.5.dp else 0.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "chip_press"
+    )
+
+    if (isSelected) {
+        val selectedBg = if (isDark) EmeraldGreen else ElectricIndigo
+        val lipColor = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
+        Box(
+            modifier = modifier
+                .height(34.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(lipColor)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                )
+                .padding(bottom = 2.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .offset(y = pressOffsetY)
+                    .clip(RoundedCornerShape(9.dp))
+                    .background(selectedBg)
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .height(32.dp)
+                .tactileInset(shape = RoundedCornerShape(10.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                )
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

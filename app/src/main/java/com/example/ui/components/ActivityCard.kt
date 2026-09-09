@@ -54,6 +54,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -69,13 +70,23 @@ import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.CoralDeleteDark
+import com.example.ui.theme.CoralDeleteLight
+import com.example.ui.theme.CoralDeleteSurfaceDark
+import com.example.ui.theme.CoralDeleteSurfaceLight
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
+import com.example.ui.theme.SleekIndigo
+import com.example.ui.theme.tactileCard
+import com.example.ui.theme.tactileInset
 
 /**
- * Modern Planner Activity Card with Tactile 3D Aesthetics:
- * - Natural symmetric layout (Checkbox + Title on Start, Reorder + Actions on End)
- * - Tactile Squircle Action Buttons (Coral Delete, Titanium Edit & Duplicate)
- * - 3 Tactile Beveled Metric Pills (Vibrant Neon Green + Slate Dark) with clean Material Icons
+ * Tactile Planner Activity Card for both Light and Dark modes:
+ * - Natural symmetric layout (Start: Checkbox + Title; End: Reorder + Actions)
+ * - 40dp Tactile Squircle Action Buttons with 8dp spacing
+ * - 32dp Tactile Completion Checkbox with bouncy scale animation
+ * - Tactile Metric Pills dynamically adapting to Light and Dark themes
  */
 @Composable
 fun PlannerActivityCard(
@@ -96,10 +107,11 @@ fun PlannerActivityCard(
     val indexStr = String.format("%02d", displayIndex)
     val isPersian = language == AppLanguage.PERSIAN
     val unitLabel = WeightUnit.getUnitLabel(weightUnit, isPersian)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val cardAlpha by animateFloatAsState(
-        targetValue = if (isDone) 0.65f else 1.0f,
-        animationSpec = tween(durationMillis = 280),
+        targetValue = if (isDone) 0.60f else 1.0f,
+        animationSpec = tween(durationMillis = 260),
         label = "card_alpha"
     )
 
@@ -107,32 +119,26 @@ fun PlannerActivityCard(
         modifier = modifier
             .fillMaxWidth()
             .graphicsLayer { alpha = cardAlpha }
-            .clip(RoundedCornerShape(22.dp))
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF161B27),
-                        Color(0xFF10131B)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                brush = Brush.verticalGradient(
-                    listOf(
-                        if (isDone) KineticGreen.copy(alpha = 0.35f) else Color(0xFF2B364C),
-                        Color(0xFF171D29)
-                    )
-                ),
-                shape = RoundedCornerShape(22.dp)
+            .tactileCard(
+                shape = RoundedCornerShape(22.dp),
+                backgroundColor = if (isDone) {
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                } else {
+                    MaterialTheme.colorScheme.surface
+                },
+                borderColor = if (isDone) {
+                    EmeraldGreen.copy(alpha = 0.40f)
+                } else {
+                    null
+                }
             )
             .padding(14.dp)
             .testTag("activity_card_${activity.id}"),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // TOP ROW: Natural symmetry restored:
-        // [START] Checkbox Circle + Index Badge + Activity Name & Subtitle
-        // [END] Move Up/Down + [Duplicate] [Edit] [Delete]
+        // TOP ROW: Natural Symmetry
+        // [START] 32.dp Checkbox + Index + Title + Subtitle
+        // [END] Up/Down Chevrons + [Duplicate] [Edit] [Delete] with 8.dp spacing & 40.dp targets
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -146,37 +152,12 @@ fun PlannerActivityCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Done Checkbox Circle (Previous intuitive component)
-                Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(if (isDone) KineticGreen else Color(0xFF141923))
-                        .border(
-                            width = 2.dp,
-                            color = if (isDone) KineticGreen else Color(0xFF3F4E6B),
-                            shape = CircleShape
-                        )
-                        .clickable(
-                            enabled = onToggleDone != null,
-                            onClick = { onToggleDone?.invoke() }
-                        )
-                        .testTag("btn_done_activity_${activity.id}"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = isDone,
-                        enter = scaleIn() + fadeIn(),
-                        exit = scaleOut() + fadeOut()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = "Done",
-                            tint = Color(0xFF072111),
-                            modifier = Modifier.size(17.dp)
-                        )
-                    }
-                }
+                // 32.dp Tactile Circular Completion Checkbox with bouncy spring animation
+                TactileCompletionCheckbox(
+                    isDone = isDone,
+                    onClick = onToggleDone,
+                    testTag = "btn_done_activity_${activity.id}"
+                )
 
                 // Title + Subtitle Column
                 Column(
@@ -193,7 +174,7 @@ fun PlannerActivityCard(
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             ),
-                            color = if (isDone) KineticGreen else Color(0xFF7E92B3)
+                            color = if (isDone) EmeraldGreen else MaterialTheme.colorScheme.primary
                         )
                         Text(
                             text = activity.name,
@@ -201,7 +182,7 @@ fun PlannerActivityCard(
                                 fontWeight = FontWeight.Bold,
                                 textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None
                             ),
-                            color = if (isDone) Color(0xFF94A3B8) else Color(0xFFF1F5F9),
+                            color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -210,7 +191,7 @@ fun PlannerActivityCard(
                         Text(
                             text = activity.subtitle,
                             style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                            color = Color(0xFF7E92B3),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -218,14 +199,14 @@ fun PlannerActivityCard(
                 }
             }
 
-            // End section: Up/Down Reorder + Tactile Squircles [Duplicate, Edit, Delete]
+            // End section: Up/Down Reorder + Tactile Squircles [Duplicate, Edit, Delete] (40dp size, 8dp gap)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Reorder Up / Down Chevrons
                 Column(
-                    verticalArrangement = Arrangement.spacedBy((-6).dp),
+                    verticalArrangement = Arrangement.spacedBy((-8).dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
@@ -235,7 +216,7 @@ fun PlannerActivityCard(
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowUp,
                             contentDescription = strings.moveUpBtn,
-                            tint = Color(0xFF889BB7),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -246,17 +227,17 @@ fun PlannerActivityCard(
                         Icon(
                             imageVector = Icons.Default.KeyboardArrowDown,
                             contentDescription = strings.moveDownBtn,
-                            tint = Color(0xFF889BB7),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 }
 
-                // 3 Tactile Squircles: Duplicate, Edit, Delete
+                // 3 Tactile Squircles with 40dp touch target and 8dp spacing
                 TactileSquircleButton(
                     icon = Icons.Default.ContentCopy,
                     contentDescription = strings.duplicateBtn,
-                    variant = SquircleVariant.DARK_NEUTRAL,
+                    variant = SquircleVariant.NEUTRAL,
                     onClick = onDuplicate,
                     testTag = "btn_duplicate_${activity.id}"
                 )
@@ -264,7 +245,7 @@ fun PlannerActivityCard(
                 TactileSquircleButton(
                     icon = Icons.Default.Edit,
                     contentDescription = strings.editBtn,
-                    variant = SquircleVariant.DARK_NEUTRAL,
+                    variant = SquircleVariant.NEUTRAL,
                     onClick = onEdit,
                     testTag = "btn_edit_${activity.id}"
                 )
@@ -279,7 +260,7 @@ fun PlannerActivityCard(
             }
         }
 
-        // BOTTOM ROW: 3 Tactile Beveled Metric Pills with clean icons & typography
+        // BOTTOM ROW: 3 Tactile Metric Pills
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -288,7 +269,7 @@ fun PlannerActivityCard(
             when (activity.type) {
                 ActivityType.WEIGHT_REPS -> {
                     val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
-                    // Pill 1: Tactile Neon Green (Weight) with Dumbbell Icon
+                    // Pill 1: Highlighted Tactile Pill (Weight) with Dumbbell
                     TactileMetricPill(
                         icon = Icons.Default.FitnessCenter,
                         text = "${formatDigits(displayWeight, language)} $unitLabel",
@@ -297,7 +278,7 @@ fun PlannerActivityCard(
                         modifier = Modifier.weight(1.05f)
                     )
 
-                    // Pill 2: Tactile Dark (Sets & Reps) with Repeat/Cycle Icon
+                    // Pill 2: Inset Matte Pill (Sets & Reps)
                     val repsText = if (isPersian) {
                         "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)}"
                     } else {
@@ -311,7 +292,7 @@ fun PlannerActivityCard(
                         modifier = Modifier.weight(1.15f)
                     )
 
-                    // Pill 3: Tactile Dark (Type / Details) with Dumbbell Icon
+                    // Pill 3: Inset Matte Pill (Type / Details)
                     TactileMetricPill(
                         icon = Icons.Default.FitnessCenter,
                         text = strings.typeWeightReps,
@@ -370,12 +351,83 @@ fun PlannerActivityCard(
 }
 
 // -------------------------------------------------------------
-// SQUIRCLE BUTTONS (Trash, Edit, Copy)
+// 32.dp TACTILE COMPLETION CHECKBOX (Bouncy Spring Animation)
+// -------------------------------------------------------------
+
+@Composable
+private fun TactileCompletionCheckbox(
+    isDone: Boolean,
+    onClick: (() -> Unit)?,
+    testTag: String,
+    modifier: Modifier = Modifier
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.90f else 1.0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "checkbox_scale"
+    )
+
+    val bgCol = if (isDone) {
+        EmeraldGreen
+    } else if (isDark) {
+        MaterialTheme.colorScheme.surfaceContainerLowest
+    } else {
+        MaterialTheme.colorScheme.surfaceContainerLow
+    }
+
+    val borderCol = if (isDone) {
+        EmeraldGreen
+    } else if (isDark) {
+        MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
+    } else {
+        MaterialTheme.colorScheme.outline.copy(alpha = 0.8f)
+    }
+
+    Box(
+        modifier = modifier
+            .size(32.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(CircleShape)
+            .background(bgCol)
+            .border(width = 2.dp, color = borderCol, shape = CircleShape)
+            .clickable(
+                enabled = onClick != null,
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = { onClick?.invoke() }
+            )
+            .testTag(testTag),
+        contentAlignment = Alignment.Center
+    ) {
+        AnimatedVisibility(
+            visible = isDone,
+            enter = scaleIn(animationSpec = spring(dampingRatio = 0.6f, stiffness = Spring.StiffnessMediumLow)) + fadeIn(),
+            exit = scaleOut() + fadeOut()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = "Done",
+                tint = Color.White,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+// -------------------------------------------------------------
+// SQUIRCLE BUTTONS (40dp Touch Target, Coral Delete, Neutral Edit & Copy)
 // -------------------------------------------------------------
 
 private enum class SquircleVariant {
     CORAL_DELETE,
-    DARK_NEUTRAL
+    NEUTRAL
 }
 
 @Composable
@@ -389,6 +441,7 @@ private fun TactileSquircleButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     val pressOffsetY by animateDpAsState(
         targetValue = if (isPressed) 2.dp else 0.dp,
@@ -403,26 +456,44 @@ private fun TactileSquircleButton(
 
     val (faceColor, lipColor, borderColor, iconColor) = when (variant) {
         SquircleVariant.CORAL_DELETE -> {
-            listOf(
-                Color(0xFF381C24),
-                Color(0xFF200E14),
-                Color(0xFFF87171).copy(alpha = 0.28f),
-                Color(0xFFF87171)
-            )
+            if (isDark) {
+                listOf(
+                    CoralDeleteSurfaceDark,
+                    Color(0xFF200E14),
+                    CoralDeleteDark.copy(alpha = 0.35f),
+                    CoralDeleteDark
+                )
+            } else {
+                listOf(
+                    CoralDeleteSurfaceLight,
+                    Color(0xFFFECACA),
+                    CoralDeleteLight.copy(alpha = 0.25f),
+                    CoralDeleteLight
+                )
+            }
         }
-        SquircleVariant.DARK_NEUTRAL -> {
-            listOf(
-                Color(0xFF1E2432),
-                Color(0xFF10141E),
-                Color(0xFF3B4861).copy(alpha = 0.40f),
-                Color(0xFFCBD5E1)
-            )
+        SquircleVariant.NEUTRAL -> {
+            if (isDark) {
+                listOf(
+                    MaterialTheme.colorScheme.surfaceContainerHigh,
+                    MaterialTheme.colorScheme.surfaceContainerLowest,
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.40f),
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                listOf(
+                    MaterialTheme.colorScheme.surface,
+                    Color(0xFFE2E8F0),
+                    MaterialTheme.colorScheme.outline.copy(alpha = 0.70f),
+                    MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 
     Box(
         modifier = modifier
-            .size(36.dp)
+            .size(40.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(lipColor)
             .clickable(
@@ -436,14 +507,15 @@ private fun TactileSquircleButton(
         Box(
             modifier = Modifier
                 .offset(y = pressOffsetY)
-                .size(width = 36.dp, height = (36 - 2.5).dp)
+                .size(width = 40.dp, height = (40 - 2.5).dp)
                 .clip(RoundedCornerShape(11.dp))
                 .background(faceColor)
                 .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(11.dp))
                 .drawBehind {
                     // Fine top highlight
+                    val hl = if (isDark) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.60f)
                     drawLine(
-                        color = Color.White.copy(alpha = 0.12f),
+                        color = hl,
                         start = Offset(x = 6f, y = 1.5f),
                         end = Offset(x = size.width - 6f, y = 1.5f),
                         strokeWidth = 2f
@@ -455,14 +527,14 @@ private fun TactileSquircleButton(
                 imageVector = icon,
                 contentDescription = contentDescription,
                 tint = iconColor,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(18.dp)
             )
         }
     }
 }
 
 // -------------------------------------------------------------
-// TACTILE METRIC PILL (Clean Material Icons + 3D Beveled Tactile)
+// TACTILE METRIC PILL (Highlight vs Debossed Matte Inset)
 // -------------------------------------------------------------
 
 @Composable
@@ -473,6 +545,7 @@ private fun TactileMetricPill(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
@@ -487,54 +560,93 @@ private fun TactileMetricPill(
         label = "pill_lip"
     )
 
-    val lipColor = if (isHighlight) Color(0xFF094721) else Color(0xFF0B0F16)
-    val faceBg = if (isHighlight) {
-        Brush.verticalGradient(
-            listOf(
-                Color(0xFF22C55E),
-                Color(0xFF15803D)
+    if (isHighlight) {
+        // Highlighted Elevated Tactile Pill (Emerald in Dark / Indigo or Emerald in Light)
+        val faceBg = if (isDark) {
+            Brush.verticalGradient(
+                listOf(
+                    EmeraldGreen,
+                    Color(0xFF059669)
+                )
             )
-        )
-    } else {
-        Brush.verticalGradient(
-            listOf(
-                Color(0xFF1D2331),
-                Color(0xFF151923)
+        } else {
+            Brush.verticalGradient(
+                listOf(
+                    ElectricIndigo,
+                    Color(0xFF4338CA)
+                )
             )
-        )
-    }
-    val borderColor = if (isHighlight) Color(0xFF86EFAC).copy(alpha = 0.70f) else Color(0xFF333E53).copy(alpha = 0.45f)
-    val contentTint = if (isHighlight) Color(0xFF042911) else Color(0xFF94A3B8)
-    val textTint = if (isHighlight) Color(0xFF042911) else Color(0xFFE2E8F0)
+        }
+        val lipColor = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
+        val borderColor = if (isDark) Color(0xFF6EE7B7).copy(alpha = 0.6f) else Color(0xFFA5B4FC).copy(alpha = 0.5f)
+        val contentTint = Color.White
 
-    Box(
-        modifier = modifier
-            .height(38.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(lipColor)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-            .padding(bottom = bottomLipHeight)
-    ) {
         Box(
-            modifier = Modifier
-                .offset(y = pressOffsetY)
-                .fillMaxWidth()
-                .height((38 - 2.5).dp)
+            modifier = modifier
+                .height(38.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(lipColor)
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                )
+                .padding(bottom = bottomLipHeight)
+        ) {
+            Box(
+                modifier = Modifier
+                    .offset(y = pressOffsetY)
+                    .fillMaxWidth()
+                    .height((38 - 2.5).dp)
                 .clip(RoundedCornerShape(11.dp))
                 .background(faceBg)
                 .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(11.dp))
                 .drawBehind {
                     drawLine(
-                        color = if (isHighlight) Color.White.copy(alpha = 0.40f) else Color.White.copy(alpha = 0.10f),
+                        color = Color.White.copy(alpha = 0.35f),
                         start = Offset(x = 8f, y = 1.5f),
                         end = Offset(x = size.width - 8f, y = 1.5f),
                         strokeWidth = 2f
                     )
                 }
+                .padding(horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = contentTint,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.2.sp
+                        ),
+                        color = contentTint,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+    } else {
+        // Debossed Matte Inset Pill (Tactile Inset Well)
+        Box(
+            modifier = modifier
+                .height(38.dp)
+                .tactileInset(shape = RoundedCornerShape(12.dp))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick
+                )
                 .padding(horizontal = 8.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -545,17 +657,17 @@ private fun TactileMetricPill(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = contentTint,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(15.dp)
                 )
                 Spacer(modifier = Modifier.width(5.dp))
                 Text(
                     text = text,
                     style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = if (isHighlight) FontWeight.Black else FontWeight.SemiBold,
+                        fontWeight = FontWeight.SemiBold,
                         letterSpacing = 0.2.sp
                     ),
-                    color = textTint,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

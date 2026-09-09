@@ -55,15 +55,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.luminance
 import com.example.data.local.entity.ActivityEntity
 import com.example.data.model.ActivityType
 import com.example.data.model.WeightUnit
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
 import com.example.ui.theme.OrangeAccent
 import com.example.ui.theme.SleekIndigo
+import com.example.ui.theme.tactileButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -417,46 +421,65 @@ fun AddEditActivitySheet(
             }
 
             // Action Buttons (Save & Cancel)
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {
-                        if (name.isBlank()) {
-                            nameError = strings.errEnterName
-                        } else {
-                            val canonicalWeightKg = WeightUnit.toKg(weight, weightUnit)
-                            onSave(name, subtitle, type, sets, reps, canonicalWeightKg, duration, distance)
-                        }
-                    },
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                val btnBase = if (isDark) SleekIndigo else ElectricIndigo
+                val btnLip = if (isDark) Color(0xFF3131C0) else Color(0xFF3730A3)
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(54.dp)
-                        .testTag("btn_save_activity"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SleekIndigo,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Icon(imageVector = Icons.Default.Save, contentDescription = null, tint = Color.White)
-                    Spacer(modifier = Modifier.size(8.dp))
-                    Text(
-                        text = strings.saveToPlanBtn,
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp
+                        .tactileButton(
+                            onClick = {
+                                if (name.isBlank()) {
+                                    nameError = strings.errEnterName
+                                } else {
+                                    val canonicalWeightKg = WeightUnit.toKg(weight, weightUnit)
+                                    onSave(name, subtitle, type, sets, reps, canonicalWeightKg, duration, distance)
+                                }
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            baseColor = btnBase,
+                            lipColor = btnLip,
+                            borderColor = btnBase.copy(alpha = 0.5f)
                         )
-                    )
+                        .testTag("btn_save_activity"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Save, contentDescription = null, tint = Color.White)
+                        Text(
+                            text = strings.saveToPlanBtn,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
+                            ),
+                            color = Color.White
+                        )
+                    }
                 }
 
-                OutlinedButton(
-                    onClick = onDismiss,
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant)
+                        .height(48.dp)
+                        .tactileButton(
+                            onClick = onDismiss,
+                            shape = RoundedCornerShape(16.dp),
+                            baseColor = MaterialTheme.colorScheme.surface,
+                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = strings.cancelBtn)
+                    Text(
+                        text = strings.cancelBtn,
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -471,36 +494,73 @@ private fun TypePillButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val bg = if (isSelected) SleekIndigo else Color.Transparent
-    val contentColor = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-    val borderColor = if (isSelected) Color.Transparent else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val activeColor = if (isDark) SleekIndigo else ElectricIndigo
 
-    Box(
-        modifier = modifier
-            .height(46.dp)
-            .clip(RoundedCornerShape(14.dp))
-            .background(bg)
-            .border(1.dp, borderColor, RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 6.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+    if (isSelected) {
+        val lip = if (isDark) Color(0xFF3131C0) else Color(0xFF3730A3)
+        Box(
+            modifier = modifier
+                .height(46.dp)
+                .tactileButton(
+                    onClick = onClick,
+                    shape = RoundedCornerShape(14.dp),
+                    baseColor = activeColor,
+                    lipColor = lip,
+                    borderColor = activeColor.copy(alpha = 0.5f)
+                )
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(16.dp)
-            )
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium),
-                color = contentColor,
-                maxLines = 1
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    maxLines = 1
+                )
+            }
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .height(46.dp)
+                .tactileButton(
+                    onClick = onClick,
+                    shape = RoundedCornerShape(14.dp),
+                    baseColor = MaterialTheme.colorScheme.surface,
+                    lipColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                )
+                .padding(horizontal = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
+                )
+            }
         }
     }
 }

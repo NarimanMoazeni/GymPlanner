@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -59,10 +60,16 @@ import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.DarkAmberGold
 import com.example.ui.theme.DeepGreen
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
 import com.example.ui.theme.OrangeAccent
 import com.example.ui.theme.SleekIndigo
+import com.example.ui.theme.tactileButton
+import com.example.ui.theme.tactileCard
+import com.example.ui.theme.tactileInset
 import com.example.util.PersianDateHelper
 
 @Composable
@@ -219,32 +226,44 @@ fun ActiveWorkoutScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.95f))
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
                 .padding(20.dp)
         ) {
-            Button(
-                onClick = onFinishWorkout,
+            val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+            val btnBase = if (isDark) EmeraldGreen else ElectricIndigo
+            val btnLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .height(56.dp)
+                    .tactileButton(
+                        onClick = onFinishWorkout,
+                        shape = RoundedCornerShape(18.dp),
+                        baseColor = btnBase,
+                        lipColor = btnLip,
+                        borderColor = btnBase.copy(alpha = 0.5f)
+                    )
                     .testTag("btn_complete_workout_bottom"),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = SleekIndigo,
-                    contentColor = Color.White
-                )
+                contentAlignment = Alignment.Center
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = Color.White)
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
                     Text(
                         text = strings.finishSessionBtn,
-                        style = MaterialTheme.typography.labelLarge.copy(
+                        style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
-                        )
+                        ),
+                        color = Color.White
                     )
                 }
             }
@@ -264,27 +283,31 @@ private fun ActiveActivityItemCard(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val indexStr = String.format("%02d", index)
     val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
 
-    val containerBg = when {
-        isActive -> MaterialTheme.colorScheme.surfaceContainerHigh
-        isDone -> MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f)
-        else -> MaterialTheme.colorScheme.surfaceContainer
+    val activeColor = if (isDark) SleekIndigo else ElectricIndigo
+    val cardBorder = when {
+        isActive -> activeColor
+        isDone -> EmeraldGreen.copy(alpha = 0.45f)
+        else -> null
     }
 
-    val borderModifier = when {
-        isActive -> Modifier.border(1.5.dp, SleekIndigo, RoundedCornerShape(24.dp))
-        isDone -> Modifier.border(1.dp, KineticGreen.copy(alpha = 0.4f), RoundedCornerShape(24.dp))
-        else -> Modifier.border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
+    val cardElevation = when {
+        isActive -> 8.dp
+        isDone -> 2.dp
+        else -> 4.dp
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(containerBg)
-            .then(borderModifier)
+            .tactileCard(
+                shape = RoundedCornerShape(22.dp),
+                borderColor = cardBorder,
+                elevation = cardElevation
+            )
             .clickable(onClick = onSelectActive)
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -303,12 +326,12 @@ private fun ActiveActivityItemCard(
                 // Checkbox Circle
                 Box(
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(32.dp)
                         .clip(CircleShape)
-                        .background(if (isDone) KineticGreen else Color.Transparent)
+                        .background(if (isDone) EmeraldGreen else MaterialTheme.colorScheme.surfaceContainerLow)
                         .border(
                             2.dp,
-                            if (isDone) KineticGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                            if (isDone) EmeraldGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
                             CircleShape
                         )
                         .clickable(onClick = onToggleDone),
@@ -318,7 +341,7 @@ private fun ActiveActivityItemCard(
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = "Done",
-                            tint = Color(0xFF0E1116),
+                            tint = Color.White,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -335,7 +358,7 @@ private fun ActiveActivityItemCard(
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = FontFamily.Monospace
                             ),
-                            color = if (isActive) SleekIndigo else MaterialTheme.colorScheme.onSurfaceVariant
+                            color = if (isActive) activeColor else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = activity.name,
@@ -359,13 +382,13 @@ private fun ActiveActivityItemCard(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(KineticGreen.copy(alpha = 0.15f))
+                        .background(EmeraldGreen.copy(alpha = 0.15f))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = "انجام شد",
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                        color = KineticGreen
+                        color = EmeraldGreen
                     )
                 }
             }
@@ -382,28 +405,28 @@ private fun ActiveActivityItemCard(
                     val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
                     Text(
                         text = "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(displayWeight, language)} $unitLabel",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 ActivityType.DURATION -> {
                     Text(
                         text = "${formatDigits(activity.durationMinutes, language)} ${strings.minutesUnit}",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                         color = OrangeAccent
                     )
                 }
                 ActivityType.DISTANCE -> {
                     Text(
                         text = "${formatDigits(activity.distanceKm, language)} ${strings.kmUnit}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = SleekIndigo
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = activeColor
                     )
                 }
                 ActivityType.SIMPLE -> {
                     Text(
                         text = strings.typeSimple,
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -415,10 +438,9 @@ private fun ActiveActivityItemCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerLowest)
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                    .tactileInset(shape = RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 if (activity.type == ActivityType.WEIGHT_REPS) {
                     val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
@@ -429,17 +451,17 @@ private fun ActiveActivityItemCard(
                     ) {
                         Text(
                             text = "ست‌های برنامه‌ریزی شده:",
-                            style = MaterialTheme.typography.labelSmall,
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "وزن: ${formatDigits(displayWeight, language)} $unitLabel",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = KineticGreen
+                            color = EmeraldGreen
                         )
                     }
 
-                    // Set chips
+                    // High-Ergonomics Set Tracker: Large, tactile pressable tiles (min height 48.dp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -448,34 +470,62 @@ private fun ActiveActivityItemCard(
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(36.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(KineticGreen.copy(alpha = 0.12f))
-                                    .border(1.dp, KineticGreen.copy(alpha = 0.3f), RoundedCornerShape(8.dp)),
+                                    .height(48.dp)
+                                    .tactileButton(
+                                        onClick = onToggleDone,
+                                        shape = RoundedCornerShape(12.dp),
+                                        baseColor = EmeraldGreen.copy(alpha = 0.15f),
+                                        lipColor = EmeraldGreen.copy(alpha = 0.35f),
+                                        borderColor = EmeraldGreen.copy(alpha = 0.40f)
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = "ست $s: ${formatDigits(activity.reps, language)}",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = KineticGreen
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "ست $s",
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        color = EmeraldGreen
+                                    )
+                                    Text(
+                                        text = "${formatDigits(activity.reps, language)} تکرار",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontSize = 9.5.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
                         }
                     }
                 }
 
-                Button(
-                    onClick = onToggleDone,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp)
+                        .tactileButton(
+                            onClick = onToggleDone,
+                            shape = RoundedCornerShape(12.dp),
+                            baseColor = MaterialTheme.colorScheme.primary,
+                            lipColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.size(6.dp))
-                    Text(text = "ثبت پایان این حرکت")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Text(
+                            text = "ثبت پایان این حرکت",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

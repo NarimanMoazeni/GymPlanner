@@ -1,18 +1,27 @@
 package com.example.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,10 +35,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -37,8 +50,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.AppScreen
 import com.example.ui.locale.LocalAppStrings
-import com.example.ui.theme.SleekIndigo
+import com.example.ui.theme.ElectricIndigo
+import com.example.ui.theme.EmeraldGreen
+import com.example.ui.theme.frostedDock
 
+/**
+ * Floating Frosted Dock Navigation Bar:
+ * - Floating capsule container with frosted glass styling and soft ambient drop shadow
+ * - Animated soft-glow capsule pill for the active tab
+ * - Tactile spring scale physics on press
+ */
 @Composable
 fun FitPlanBottomNav(
     currentScreen: AppScreen,
@@ -46,55 +67,60 @@ fun FitPlanBottomNav(
     modifier: Modifier = Modifier
 ) {
     val strings = LocalAppStrings.current
-    val bgColor = MaterialTheme.colorScheme.surfaceContainer
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp))
-            .background(bgColor)
             .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp)
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.SpaceAround,
-            verticalAlignment = Alignment.CenterVertically
+                .height(68.dp)
+                .frostedDock(shape = RoundedCornerShape(28.dp), elevation = 12.dp)
+                .padding(horizontal = 8.dp),
+            contentAlignment = Alignment.Center
         ) {
-            NavItem(
-                title = strings.navHome,
-                selected = currentScreen == AppScreen.HOME,
-                selectedIcon = Icons.Filled.Home,
-                unselectedIcon = Icons.Outlined.Home,
-                testTag = "nav_home",
-                onClick = { onNavigate(AppScreen.HOME) }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                DockNavItem(
+                    title = strings.navHome,
+                    selected = currentScreen == AppScreen.HOME,
+                    selectedIcon = Icons.Filled.Home,
+                    unselectedIcon = Icons.Outlined.Home,
+                    testTag = "nav_home",
+                    onClick = { onNavigate(AppScreen.HOME) }
+                )
 
-            NavItem(
-                title = strings.navPlanner,
-                selected = currentScreen == AppScreen.PLANNER,
-                selectedIcon = Icons.Filled.CalendarMonth,
-                unselectedIcon = Icons.Outlined.CalendarMonth,
-                testTag = "nav_planner",
-                onClick = { onNavigate(AppScreen.PLANNER) }
-            )
+                DockNavItem(
+                    title = strings.navPlanner,
+                    selected = currentScreen == AppScreen.PLANNER,
+                    selectedIcon = Icons.Filled.CalendarMonth,
+                    unselectedIcon = Icons.Outlined.CalendarMonth,
+                    testTag = "nav_planner",
+                    onClick = { onNavigate(AppScreen.PLANNER) }
+                )
 
-            NavItem(
-                title = strings.navSettings,
-                selected = currentScreen == AppScreen.SETTINGS,
-                selectedIcon = Icons.Filled.Settings,
-                unselectedIcon = Icons.Outlined.Settings,
-                testTag = "nav_settings",
-                onClick = { onNavigate(AppScreen.SETTINGS) }
-            )
+                DockNavItem(
+                    title = strings.navSettings,
+                    selected = currentScreen == AppScreen.SETTINGS,
+                    selectedIcon = Icons.Filled.Settings,
+                    unselectedIcon = Icons.Outlined.Settings,
+                    testTag = "nav_settings",
+                    onClick = { onNavigate(AppScreen.SETTINGS) }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun NavItem(
+private fun DockNavItem(
     title: String,
     selected: Boolean,
     selectedIcon: ImageVector,
@@ -102,35 +128,77 @@ private fun NavItem(
     testTag: String,
     onClick: () -> Unit
 ) {
-    val icon = if (selected) selectedIcon else unselectedIcon
-    val color = if (selected) SleekIndigo else MaterialTheme.colorScheme.onSurfaceVariant
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    Column(
+    // Active accent color: Emerald in Dark Mode, Electric Indigo in Light Mode
+    val activeAccentColor = if (isDark) EmeraldGreen else ElectricIndigo
+    val activeCapsuleBg = if (isDark) {
+        activeAccentColor.copy(alpha = 0.16f)
+    } else {
+        activeAccentColor.copy(alpha = 0.12f)
+    }
+
+    val icon = if (selected) selectedIcon else unselectedIcon
+    val contentColor = if (selected) activeAccentColor else MaterialTheme.colorScheme.onSurfaceVariant
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1.0f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "nav_press_scale"
+    )
+
+    Box(
         modifier = Modifier
-            .testTag(testTag)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clip(RoundedCornerShape(20.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() },
+                interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .testTag(testTag)
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = color,
-            modifier = Modifier.size(24.dp)
-        )
-        Text(
-            text = title,
-            color = color,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontSize = 11.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                letterSpacing = 0.5.sp
+        // Animated soft capsule indicator
+        Row(
+            modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(if (selected) activeCapsuleBg else Color.Transparent)
+                .padding(horizontal = if (selected) 16.dp else 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = contentColor,
+                modifier = Modifier.size(24.dp)
             )
-        )
+
+            AnimatedVisibility(
+                visible = selected,
+                enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
+                exit = fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMediumLow))
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = title,
+                        color = contentColor,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.5.sp,
+                            letterSpacing = 0.3.sp
+                        )
+                    )
+                }
+            }
+        }
     }
 }

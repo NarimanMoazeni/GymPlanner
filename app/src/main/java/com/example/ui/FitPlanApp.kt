@@ -27,6 +27,7 @@ import com.example.ui.screens.ActiveWorkoutScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.OnboardingScreen
 import com.example.ui.screens.PlannerScreen
+import com.example.ui.screens.ReportScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.theme.FitPlanTheme
 
@@ -55,6 +56,7 @@ fun FitPlanApp(
             val showBottomBar = uiState.currentScreen in listOf(
                 AppScreen.HOME,
                 AppScreen.PLANNER,
+                AppScreen.REPORT,
                 AppScreen.SETTINGS
             )
 
@@ -132,6 +134,26 @@ fun FitPlanApp(
                                 onMoveUp = { day, act -> viewModel.moveActivityUp(day, act) },
                                 onMoveDown = { day, act -> viewModel.moveActivityDown(day, act) },
                                 onCopyPlan = { srcDay -> viewModel.openCopyPlanDialog(srcDay) }
+                            )
+                        }
+
+                        AppScreen.REPORT -> {
+                            ReportScreen(
+                                userWeightKg = uiState.preferences.userWeightKg,
+                                userHeightCm = uiState.preferences.userHeightCm,
+                                weightHistoryRaw = uiState.preferences.weightHistoryRaw,
+                                weightUnit = uiState.preferences.weightUnit,
+                                allSessions = uiState.allSessions,
+                                allCompletedActivities = uiState.allCompletedActivities,
+                                workoutDays = uiState.workoutDays,
+                                activitiesMap = uiState.activitiesByDay,
+                                todayWeekIndex = uiState.todayWeekIndex,
+                                onLogWeight = { w -> viewModel.logWeight(w) },
+                                onUpdateHeight = { h -> viewModel.updateUserHeight(h) },
+                                onNavigateToPlannerDay = { day ->
+                                    viewModel.selectPlannerDay(day)
+                                    viewModel.navigateTo(AppScreen.PLANNER)
+                                }
                             )
                         }
 

@@ -28,6 +28,7 @@ enum class AppScreen {
     ONBOARDING,
     HOME,
     PLANNER,
+    REPORT,
     ACTIVE_WORKOUT,
     SETTINGS
 }
@@ -43,6 +44,8 @@ data class FitPlanUiState(
     val todaySession: WorkoutSessionEntity? = null,
     val completedActivitiesToday: List<CompletedActivityEntity> = emptyList(),
     val completedActivitiesPlannerDay: List<CompletedActivityEntity> = emptyList(),
+    val allSessions: List<WorkoutSessionEntity> = emptyList(),
+    val allCompletedActivities: List<CompletedActivityEntity> = emptyList(),
     val preferences: AppPreferences = AppPreferences(),
     val isAddEditSheetOpen: Boolean = false,
     val editingActivity: ActivityEntity? = null,
@@ -129,6 +132,18 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
             }
         }
 
+        viewModelScope.launch {
+            repository.allSessionsFlow.collect { sessions ->
+                _uiState.update { it.copy(allSessions = sessions) }
+            }
+        }
+
+        viewModelScope.launch {
+            repository.allCompletedActivitiesFlow.collect { acts ->
+                _uiState.update { it.copy(allCompletedActivities = acts) }
+            }
+        }
+
         observePlannerDayCompletions(todayWeek)
     }
 
@@ -174,6 +189,25 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
     fun setWeeklyGoal(goal: String) {
         viewModelScope.launch {
             repository.setWeeklyGoal(goal.trim())
+        }
+    }
+
+    fun logWeight(weight: Float) {
+        viewModelScope.launch {
+            val dateKey = PersianDateHelper.getTodayDateKey()
+            repository.logWeightEntry(weight, dateKey)
+        }
+    }
+
+    fun updateUserHeight(height: Float) {
+        viewModelScope.launch {
+            repository.setUserHeight(height)
+        }
+    }
+
+    fun updateUserWeight(weight: Float) {
+        viewModelScope.launch {
+            repository.setUserWeight(weight)
         }
     }
 

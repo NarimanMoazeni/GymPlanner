@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
@@ -47,6 +49,7 @@ import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
 import com.example.ui.theme.AmberGold
 import com.example.ui.theme.DarkAmberGold
+import com.example.ui.theme.ElectricIndigo
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.tactileButton
 import com.example.ui.theme.tactileCard
@@ -63,18 +66,21 @@ import kotlinx.coroutines.delay
 @Composable
 fun RestTimerCard(
     modifier: Modifier = Modifier,
-    initialSeconds: Int = 42
+    initialSeconds: Int = 60
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     var secondsLeft by remember { mutableIntStateOf(initialSeconds) }
-    var isRunning by remember { mutableStateOf(true) }
+    var isRunning by remember { mutableStateOf(false) } // Default state: Paused
 
     LaunchedEffect(isRunning, secondsLeft) {
         if (isRunning && secondsLeft > 0) {
             delay(1000L)
             secondsLeft -= 1
+            if (secondsLeft == 0) {
+                isRunning = false
+            }
         }
     }
 
@@ -82,13 +88,13 @@ fun RestTimerCard(
     val seconds = secondsLeft % 60
     val timeFormatted = String.format("%02d:%02d", minutes, seconds)
 
-    // Pulsating soft glow animation when running
+    // Pulsating soft amber glow animation only while actively counting down
     val infiniteTransition = rememberInfiniteTransition(label = "timer_glow")
     val pulseAlpha by infiniteTransition.animateFloat(
         initialValue = 0.25f,
-        targetValue = 0.75f,
+        targetValue = 0.85f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1000),
+            animation = tween(durationMillis = 900),
             repeatMode = RepeatMode.Reverse
         ),
         label = "glow_alpha"
@@ -98,124 +104,197 @@ fun RestTimerCard(
     val borderGlowColor = if (isRunning && secondsLeft > 0) {
         accentAmber.copy(alpha = pulseAlpha)
     } else {
-        MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+        MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
     }
 
-    Row(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .tactileCard(
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(22.dp),
                 borderColor = borderGlowColor,
                 elevation = if (isRunning && secondsLeft > 0) 8.dp else 4.dp
             )
-            .padding(horizontal = 16.dp, vertical = 14.dp)
+            .padding(16.dp)
             .testTag("rest_timer_card"),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Left info: Stopwatch Icon + Title + Monospace Countdown inside Debossed Well
+        // Upper Row: Stopwatch Icon + Title + Digital Monospace Countdown & Action Controls
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Stopwatch Icon Squircle
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(accentAmber.copy(alpha = 0.15f))
-                    .border(1.dp, accentAmber.copy(alpha = 0.4f), RoundedCornerShape(14.dp)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Timer,
-                    contentDescription = strings.restTimerTitle,
-                    tint = accentAmber,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = strings.restTimerTitle,
-                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // Sunken Digital Well for Countdown
+                // Stopwatch Icon Squircle
                 Box(
                     modifier = Modifier
-                        .tactileInset(shape = RoundedCornerShape(10.dp))
-                        .padding(horizontal = 10.dp, vertical = 3.dp),
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(accentAmber.copy(alpha = 0.15f))
+                        .border(1.dp, accentAmber.copy(alpha = 0.4f), RoundedCornerShape(14.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Timer,
+                        contentDescription = strings.restTimerTitle,
+                        tint = accentAmber,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = strings.restTimerTitle,
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    // Sunken Digital Well for Countdown
+                    Box(
+                        modifier = Modifier
+                            .tactileInset(shape = RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 3.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = formatDigits(timeFormatted, language),
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 2.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 22.sp
+                            ),
+                            color = if (isRunning && secondsLeft > 0) accentAmber else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Controls: Play/Pause Toggle + Reset Squircle + +30s Button
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Play / Pause Toggle Button
+                val playLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
+                val playBase = if (isDark) EmeraldGreen else ElectricIndigo
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .tactileButton(
+                            onClick = {
+                                if (secondsLeft == 0) secondsLeft = 60
+                                isRunning = !isRunning
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            baseColor = if (isRunning) accentAmber else playBase,
+                            lipColor = if (isRunning) (if (isDark) Color(0xFF78350F) else Color(0xFFB45309)) else playLip,
+                            borderColor = (if (isRunning) accentAmber else playBase).copy(alpha = 0.5f)
+                        )
+                        .testTag("btn_timer_play_pause"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = if (isRunning) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isRunning) "Pause" else "Play",
+                        tint = Color.White,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                // Reset Button
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .tactileButton(
+                            onClick = {
+                                isRunning = false
+                                secondsLeft = 60
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .testTag("btn_timer_reset"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = strings.resetTimerBtn,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                // +30s Raised Tactile Button
+                val amberLip = if (isDark) Color(0xFF78350F) else Color(0xFFB45309)
+                Box(
+                    modifier = Modifier
+                        .height(42.dp)
+                        .tactileButton(
+                            onClick = {
+                                secondsLeft += 30
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                            borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                        )
+                        .padding(horizontal = 12.dp)
+                        .testTag("btn_timer_add_30"),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = formatDigits(timeFormatted, language),
-                        style = MaterialTheme.typography.headlineMedium.copy(
+                        text = "+30s",
+                        style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Black,
-                            letterSpacing = 2.sp,
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 22.sp
+                            letterSpacing = 0.3.sp
                         ),
-                        color = if (secondsLeft > 0) accentAmber else EmeraldGreen
+                        color = accentAmber
                     )
                 }
             }
         }
 
-        // Right controls: Raised Tactile +30s Button and Tactile Reset Squircle
+        // Lower Row: 4 Tactile Quick Duration Chips [ 30s | 60s | 90s | 120s ]
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // +30s Button (Raised Amber Tactile Button)
-            val amberLip = if (isDark) Color(0xFF78350F) else Color(0xFFB45309)
-            Box(
-                modifier = Modifier
-                    .height(42.dp)
-                    .tactileButton(
-                        onClick = {
-                            secondsLeft += 30
-                            isRunning = true
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        baseColor = accentAmber,
-                        lipColor = amberLip,
-                        borderColor = accentAmber.copy(alpha = 0.5f)
+            val chips = listOf(30, 60, 90, 120)
+            chips.forEach { chipSeconds ->
+                val isCurrentPreset = secondsLeft == chipSeconds
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .tactileButton(
+                            onClick = {
+                                secondsLeft = chipSeconds
+                                isRunning = true
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            baseColor = if (isCurrentPreset) accentAmber.copy(alpha = 0.22f) else MaterialTheme.colorScheme.surfaceContainerHigh,
+                            lipColor = if (isCurrentPreset) accentAmber.copy(alpha = 0.45f) else MaterialTheme.colorScheme.surfaceContainerLowest,
+                            borderColor = if (isCurrentPreset) accentAmber else Color.Transparent
+                        )
+                        .testTag("chip_timer_${chipSeconds}s"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val label = "${chipSeconds}s"
+                    Text(
+                        text = label,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = if (isCurrentPreset) FontWeight.Black else FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace
+                        ),
+                        color = if (isCurrentPreset) accentAmber else MaterialTheme.colorScheme.onSurface
                     )
-                    .padding(horizontal = 14.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = strings.add30SecBtn,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.3.sp
-                    ),
-                    color = Color.White
-                )
-            }
-
-            // Reset Button (Tactile Neutral Squircle)
-            Box(
-                modifier = Modifier
-                    .size(42.dp)
-                    .tactileButton(
-                        onClick = {
-                            secondsLeft = 60
-                            isRunning = true
-                        },
-                        shape = RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = strings.resetTimerBtn,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp)
-                )
+                }
             }
         }
     }

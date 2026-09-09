@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,6 +30,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Straighten
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
@@ -56,6 +62,7 @@ import com.example.data.local.entity.WorkoutDayEntity
 import com.example.data.model.ActivityType
 import com.example.data.model.WeightUnit
 import com.example.ui.components.RestTimerCard
+import com.example.ui.components.TactileMetricPill
 import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
@@ -104,7 +111,18 @@ fun ActiveWorkoutScreen(
             .background(MaterialTheme.colorScheme.background)
             .windowInsetsPadding(WindowInsets.navigationBars)
     ) {
-        // Top App Bar
+        // Top App Bar: Close button + Active Workout indicator with pulsing green dot + Progress Badge
+        val pulseTransition = rememberInfiniteTransition(label = "top_dot_pulse")
+        val pulseAlpha by pulseTransition.animateFloat(
+            initialValue = 0.4f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 800),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "pulse_alpha"
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,6 +130,7 @@ fun ActiveWorkoutScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Close Button
             IconButton(
                 onClick = onClose,
                 modifier = Modifier
@@ -126,27 +145,43 @@ fun ActiveWorkoutScreen(
                 )
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = strings.activeWorkoutTitle,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
+            // Center: "Active Workout" text with pulsing green dot
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(EmeraldGreen.copy(alpha = pulseAlpha))
                 )
                 Text(
-                    text = todayDateInfo.fullDateString,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = strings.activeWorkoutTitle,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Black,
+                        fontFamily = FontFamily.SansSerif,
+                        letterSpacing = 0.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
-            TextButton(
-                onClick = onFinishWorkout,
-                modifier = Modifier.testTag("btn_end_workout_top")
+            // Right: Tactile Progress Badge (Completed / Total)
+            Box(
+                modifier = Modifier
+                    .height(34.dp)
+                    .tactileInset(shape = RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = strings.finishSessionBtn,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = SleekIndigo
+                    text = "${formatDigits(completedCount, language)} / ${formatDigits(totalCount, language)}",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    ),
+                    color = if (completedCount == totalCount && totalCount > 0) EmeraldGreen else MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -178,7 +213,7 @@ fun ActiveWorkoutScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "${formatDigits(completedCount, language)} از ${formatDigits(totalCount, language)} فعالیت انجام شده",
+                            text = strings.homeCompletedOfTotalActivities.format(formatDigits(completedCount, language), formatDigits(totalCount, language)),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -386,7 +421,7 @@ private fun ActiveActivityItemCard(
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "انجام شد",
+                        text = strings.activityDoneBadge,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = EmeraldGreen
                     )
@@ -394,40 +429,86 @@ private fun ActiveActivityItemCard(
             }
         }
 
-        // Parameters Badges Row
+        // Parameters: 3 Distinct TactileMetricPill Capsules (Weight, Sets×Reps, Exercise Type)
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             when (activity.type) {
                 ActivityType.WEIGHT_REPS -> {
                     val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
-                    Text(
-                        text = "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(displayWeight, language)} $unitLabel",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    // Pill 1: Highlighted Tactile Pill (Weight)
+                    TactileMetricPill(
+                        icon = Icons.Default.FitnessCenter,
+                        text = "${formatDigits(displayWeight, language)} $unitLabel",
+                        isHighlight = true,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1.05f)
+                    )
+
+                    // Pill 2: Inset Matte Pill (Sets × Reps)
+                    val repsText = if (language == AppLanguage.PERSIAN) {
+                        "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)}"
+                    } else {
+                        "${formatDigits(activity.sets, language)} sets × ${formatDigits(activity.reps, language)}"
+                    }
+                    TactileMetricPill(
+                        icon = Icons.Default.Refresh,
+                        text = repsText,
+                        isHighlight = false,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1.15f)
+                    )
+
+                    // Pill 3: Inset Matte Pill (Exercise Type)
+                    TactileMetricPill(
+                        icon = Icons.Default.FitnessCenter,
+                        text = strings.typeWeightReps,
+                        isHighlight = false,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1.0f)
                     )
                 }
                 ActivityType.DURATION -> {
-                    Text(
+                    TactileMetricPill(
+                        icon = Icons.Default.Timer,
                         text = "${formatDigits(activity.durationMinutes, language)} ${strings.minutesUnit}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = OrangeAccent
+                        isHighlight = true,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1.2f)
+                    )
+                    TactileMetricPill(
+                        icon = Icons.Default.Timer,
+                        text = strings.typeDuration,
+                        isHighlight = false,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 ActivityType.DISTANCE -> {
-                    Text(
+                    TactileMetricPill(
+                        icon = Icons.Default.Straighten,
                         text = "${formatDigits(activity.distanceKm, language)} ${strings.kmUnit}",
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = activeColor
+                        isHighlight = true,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1.2f)
+                    )
+                    TactileMetricPill(
+                        icon = Icons.Default.Straighten,
+                        text = strings.typeDistance,
+                        isHighlight = false,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 ActivityType.SIMPLE -> {
-                    Text(
+                    TactileMetricPill(
+                        icon = Icons.Default.FitnessCenter,
                         text = strings.typeSimple,
-                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        isHighlight = true,
+                        onClick = onSelectActive,
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -450,12 +531,12 @@ private fun ActiveActivityItemCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "ست‌های برنامه‌ریزی شده:",
+                            text = strings.activeWorkoutPlannedSets,
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "وزن: ${formatDigits(displayWeight, language)} $unitLabel",
+                            text = "${strings.activeWorkoutWeightLabel.format(formatDigits(displayWeight, language), unitLabel)}",
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = EmeraldGreen
                         )
@@ -485,12 +566,12 @@ private fun ActiveActivityItemCard(
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = "ست $s",
+                                        text = strings.activeWorkoutSetBadge.format(formatDigits(s, language)),
                                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                         color = EmeraldGreen
                                     )
                                     Text(
-                                        text = "${formatDigits(activity.reps, language)} تکرار",
+                                        text = strings.activeWorkoutRepsBadge.format(formatDigits(activity.reps, language)),
                                         style = MaterialTheme.typography.labelSmall.copy(
                                             fontSize = 9.5.sp,
                                             fontWeight = FontWeight.SemiBold
@@ -521,7 +602,7 @@ private fun ActiveActivityItemCard(
                     ) {
                         Icon(imageVector = Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         Text(
-                            text = "ثبت پایان این حرکت",
+                            text = strings.markExerciseDoneBtn,
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                             color = Color.White
                         )

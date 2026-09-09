@@ -30,6 +30,7 @@ class FitPlanRepository(
     val userProfileFlow: Flow<UserProfileEntity?> = dao.getUserProfile()
     val workoutDaysFlow: Flow<List<WorkoutDayEntity>> = dao.getAllWorkoutDays()
     val allSessionsFlow: Flow<List<WorkoutSessionEntity>> = dao.getAllSessions()
+    val allCompletedActivitiesFlow: Flow<List<CompletedActivityEntity>> = dao.getAllCompletedActivities()
     val preferencesFlow: Flow<AppPreferences> = preferencesManager.preferencesFlow
 
     fun getActivitiesForDay(dayOfWeek: Int): Flow<List<ActivityEntity>> {
@@ -75,6 +76,18 @@ class FitPlanRepository(
 
     suspend fun setWeeklyGoal(goal: String) {
         preferencesManager.setWeeklyGoal(goal)
+    }
+
+    suspend fun setUserWeight(weight: Float) {
+        preferencesManager.setUserWeight(weight)
+    }
+
+    suspend fun setUserHeight(height: Float) {
+        preferencesManager.setUserHeight(height)
+    }
+
+    suspend fun logWeightEntry(weight: Float, dateKey: String) {
+        preferencesManager.logWeightEntry(weight, dateKey)
     }
 
     suspend fun updateDayFocus(dayOfWeek: Int, focusTitle: String) {

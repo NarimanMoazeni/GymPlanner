@@ -538,7 +538,7 @@ private fun TactileSquircleButton(
 // -------------------------------------------------------------
 
 @Composable
-private fun TactileMetricPill(
+fun TactileMetricPill(
     icon: ImageVector,
     text: String,
     isHighlight: Boolean,

@@ -50,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
@@ -70,6 +71,7 @@ import com.example.ui.locale.AppLanguage
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
+import com.example.ui.theme.AmberGold
 import com.example.ui.theme.ElectricIndigo
 import com.example.ui.theme.EmeraldGreen
 import com.example.ui.theme.KineticGreen
@@ -138,28 +140,29 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // Avatar Squircle with crisp rim
+                    // 52.dp Squircle Container (dual-color rim: ElectricIndigo + AmberGold) with athletic icon
+                    val rimBrush = Brush.linearGradient(
+                        listOf(ElectricIndigo, AmberGold)
+                    )
                     Box(
                         modifier = Modifier
-                            .size(50.dp)
+                            .size(52.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(accentColor.copy(alpha = if (isDark) 0.20f else 0.12f))
-                            .border(1.5.dp, accentColor, RoundedCornerShape(16.dp)),
+                            .border(2.dp, rimBrush, RoundedCornerShape(16.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = profile.name.take(1),
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Black,
-                                fontFamily = FontFamily.SansSerif
-                            ),
-                            color = accentColor
+                        Icon(
+                            imageVector = Icons.Default.FitnessCenter,
+                            contentDescription = profile.name,
+                            tint = accentColor,
+                            modifier = Modifier.size(26.dp)
                         )
                     }
 
                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(
-                            text = "سلام، ${profile.name}!",
+                            text = String.format(strings.homeGreetingFormat, profile.name),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black,
                                 fontFamily = FontFamily.SansSerif
@@ -178,7 +181,7 @@ fun HomeScreen(
                                     .background(if (isTodayTraining) EmeraldGreen else MaterialTheme.colorScheme.outline)
                             )
                             Text(
-                                text = if (isTodayTraining) "امروز روز تمرین است" else "امروز روز استراحت و ریکاوری است",
+                                text = if (isTodayTraining) strings.homeStatusTraining else strings.homeStatusRest,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -217,9 +220,9 @@ fun HomeScreen(
         // 7-Day Horizontal Bar Section
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FramedSectionHeader(
-                title = "برنامه این هفته",
-                badgeText = "${formatDigits(plannedTrainingDaysCount, language)} روز تمرین",
-                actionText = "مشاهده تقویم",
+                title = strings.homeWeeklySectionTitle,
+                badgeText = String.format(strings.homeWeeklyBadge, formatDigits(plannedTrainingDaysCount, language)),
+                actionText = strings.homeViewCalendar,
                 onActionClick = { onNavigate(AppScreen.PLANNER) }
             )
             WeeklyDayBar(
@@ -236,8 +239,8 @@ fun HomeScreen(
         // Hero Card: Today's Plan (or Rest Day)
         if (isTodayTraining) {
             TodayTrainingHeroCard(
-                focusName = todayDayEntity?.focusName ?: "تمرین عمومی",
-                subtitle = todayDayEntity?.focusSubtitle ?: "تمرکز روی برنامه امروز",
+                focusName = todayDayEntity?.focusName ?: strings.homeDefaultFocusName,
+                subtitle = todayDayEntity?.focusSubtitle ?: strings.homeDefaultFocusSubtitle,
                 totalActivities = todayActivities.size,
                 completedActivities = completedCount,
                 progress = progressFraction,
@@ -253,9 +256,9 @@ fun HomeScreen(
         if (todayActivities.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 FramedSectionHeader(
-                    title = "فعالیت‌های امروز",
-                    badgeText = "${formatDigits(todayActivities.size, language)} حرکت",
-                    actionText = "مشاهده جزئیات",
+                    title = strings.homeTodayActivitiesSection,
+                    badgeText = String.format(strings.homeTodayActivitiesBadge, formatDigits(todayActivities.size, language)),
+                    actionText = strings.homeViewDetails,
                     onActionClick = { onNavigate(AppScreen.PLANNER) }
                 )
 
@@ -297,7 +300,7 @@ fun HomeScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "هدف شخصی تمرین، تغذیه یا رکوردهای ورزشی خود در این هفته را وارد کنید:",
+                        text = strings.homeWeeklyGoalDialogPrompt,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -380,7 +383,7 @@ private fun TodayTrainingHeroCard(
                             .background(emerald)
                     )
                     Text(
-                        text = "برنامه امروز",
+                        text = strings.homeTodayProgramBadge,
                         style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                         color = emerald
                     )
@@ -431,7 +434,7 @@ private fun TodayTrainingHeroCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${formatDigits(completedActivities, language)} از ${formatDigits(totalActivities, language)} فعالیت انجام شده",
+                    text = String.format(strings.homeCompletedOfTotalActivities, formatDigits(completedActivities, language), formatDigits(totalActivities, language)),
                     style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -444,8 +447,9 @@ private fun TodayTrainingHeroCard(
                         .border(1.dp, emerald.copy(alpha = 0.35f), RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
+                    val percentStr = if (language == AppLanguage.PERSIAN) "${formatDigits((progress * 100).toInt(), language)}٪" else "${formatDigits((progress * 100).toInt(), language)}%"
                     Text(
-                        text = "${formatDigits((progress * 100).toInt(), language)}٪",
+                        text = percentStr,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Black,
                             fontFamily = FontFamily.Monospace
@@ -502,7 +506,7 @@ private fun TodayTrainingHeroCard(
                     modifier = Modifier.size(22.dp)
                 )
                 Text(
-                    text = if (completedActivities > 0) "ادامه تمرین امروز" else strings.heroStartCta,
+                    text = if (completedActivities > 0) strings.homeContinueWorkout else strings.heroStartCta,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.SansSerif
@@ -518,6 +522,7 @@ private fun TodayTrainingHeroCard(
 private fun RestDayHeroCard(
     onGoToPlanner: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -535,7 +540,7 @@ private fun RestDayHeroCard(
         ) {
             Column {
                 Text(
-                    text = "روز استراحت و ریکاوری",
+                    text = strings.homeRestHeroTitle,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Black,
                         fontFamily = FontFamily.SansSerif
@@ -543,7 +548,7 @@ private fun RestDayHeroCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = "عضلات در زمان استراحت رشد و بازسازی می‌شوند.",
+                    text = strings.homeRestHeroDesc,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -578,7 +583,7 @@ private fun RestDayHeroCard(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "بررسی برنامه سایر روزها",
+                text = strings.homeCheckOtherDays,
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.SansSerif
@@ -653,11 +658,12 @@ private fun TodayActivityRow(
                 ActivityType.WEIGHT_REPS -> {
                     val displayWeight = WeightUnit.formatDisplay(activity.weight, weightUnit)
                     val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
-                    "${formatDigits(activity.sets, language)} ست × ${formatDigits(activity.reps, language)} تکرار • ${formatDigits(displayWeight, language)} $unitLabel"
+                    val setsReps = String.format(strings.activeWorkoutSetAndReps, formatDigits(activity.sets, language), formatDigits(activity.reps, language))
+                    "$setsReps • ${formatDigits(displayWeight, language)} $unitLabel"
                 }
-                ActivityType.DURATION -> "${formatDigits(activity.durationMinutes, language)} دقیقه"
-                ActivityType.DISTANCE -> "${formatDigits(activity.distanceKm, language)} کیلومتر"
-                ActivityType.SIMPLE -> "فعالیت ساده"
+                ActivityType.DURATION -> "${formatDigits(activity.durationMinutes, language)} ${strings.minutesUnit}"
+                ActivityType.DISTANCE -> "${formatDigits(activity.distanceKm, language)} ${strings.kmUnit}"
+                ActivityType.SIMPLE -> strings.typeSimple
             }
 
             Text(
@@ -789,7 +795,7 @@ private fun WeeklySummaryCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${formatDigits(totalPlannedDays, language)} روز تمرین برنامه‌ریزی شده در این هفته",
+                text = String.format(strings.homePlannedDaysSummary, formatDigits(totalPlannedDays, language)),
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

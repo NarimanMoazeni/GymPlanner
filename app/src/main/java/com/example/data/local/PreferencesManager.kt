@@ -3,6 +3,7 @@ package com.example.data.local
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -22,7 +23,10 @@ data class AppPreferences(
     val workoutReminderEnabled: Boolean = true,
     val lastBackupTimestamp: Long = 0L,
     val lastBackupSizeKb: Int = 0,
-    val weeklyGoalCustomText: String = ""
+    val weeklyGoalCustomText: String = "",
+    val userWeightKg: Float = 67.0f,
+    val userHeightCm: Float = 187.0f,
+    val weightHistoryRaw: String = ""
 ) {
     val weeklyGoal: String
         get() = weeklyGoalCustomText
@@ -38,6 +42,9 @@ class PreferencesManager(private val context: Context) {
         val LAST_BACKUP_TIME = longPreferencesKey("last_backup_time")
         val LAST_BACKUP_SIZE = intPreferencesKey("last_backup_size")
         val WEEKLY_GOAL = stringPreferencesKey("weekly_goal")
+        val USER_WEIGHT = floatPreferencesKey("user_weight")
+        val USER_HEIGHT = floatPreferencesKey("user_height")
+        val WEIGHT_HISTORY = stringPreferencesKey("weight_history")
     }
 
     val preferencesFlow: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -62,6 +69,9 @@ class PreferencesManager(private val context: Context) {
         val backupTime = prefs[Keys.LAST_BACKUP_TIME] ?: 0L
         val backupSize = prefs[Keys.LAST_BACKUP_SIZE] ?: 0
         val goalText = prefs[Keys.WEEKLY_GOAL] ?: ""
+        val weight = prefs[Keys.USER_WEIGHT] ?: 67.0f
+        val height = prefs[Keys.USER_HEIGHT] ?: 187.0f
+        val history = prefs[Keys.WEIGHT_HISTORY] ?: ""
 
         AppPreferences(
             language = language,
@@ -70,7 +80,10 @@ class PreferencesManager(private val context: Context) {
             workoutReminderEnabled = reminder,
             lastBackupTimestamp = backupTime,
             lastBackupSizeKb = backupSize,
-            weeklyGoalCustomText = goalText
+            weeklyGoalCustomText = goalText,
+            userWeightKg = weight,
+            userHeightCm = height,
+            weightHistoryRaw = history
         )
     }
 
@@ -108,6 +121,28 @@ class PreferencesManager(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.LAST_BACKUP_TIME] = timestamp
             prefs[Keys.LAST_BACKUP_SIZE] = sizeKb
+        }
+    }
+
+    suspend fun setUserWeight(weight: Float) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.USER_WEIGHT] = weight
+        }
+    }
+
+    suspend fun setUserHeight(height: Float) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.USER_HEIGHT] = height
+        }
+    }
+
+    suspend fun logWeightEntry(weight: Float, dateKey: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.USER_WEIGHT] = weight
+            val currentHistory = prefs[Keys.WEIGHT_HISTORY] ?: ""
+            val newEntry = "$dateKey:$weight"
+            val updated = if (currentHistory.isBlank()) newEntry else "$currentHistory;$newEntry"
+            prefs[Keys.WEIGHT_HISTORY] = updated
         }
     }
 }

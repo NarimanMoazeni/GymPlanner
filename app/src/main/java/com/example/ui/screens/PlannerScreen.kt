@@ -56,6 +56,7 @@ import com.example.data.local.entity.ActivityEntity
 import com.example.data.local.entity.WorkoutDayEntity
 import com.example.data.model.WeightUnit
 import com.example.ui.components.FramedSectionHeader
+import com.example.ui.components.MonthlyCalendarExpansion
 import com.example.ui.components.PlannerActivityCard
 import com.example.ui.components.WeeklyDayBar
 import com.example.ui.locale.LocalAppStrings
@@ -155,6 +156,17 @@ fun PlannerScreen(
             }
         }
 
+        // Full Month Calendar Expansion (View Full Month action button & grid)
+        item {
+            MonthlyCalendarExpansion(
+                selectedDayIndex = selectedDayIndex,
+                todayWeekIndex = todayWeekIndex,
+                workoutDays = workoutDays,
+                activitiesMap = activitiesMap,
+                onSelectDay = onSelectDay
+            )
+        }
+
         // 7-Day Horizontal Bar
         item {
             WeeklyDayBar(
@@ -210,7 +222,7 @@ fun PlannerScreen(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = if (isTrainingDay) "روز تمرین (${formatDigits(activities.size, language)} حرکت)" else "روز استراحت",
+                                text = if (isTrainingDay) String.format(strings.plannerDayTrainingCount, formatDigits(activities.size, language)) else strings.plannerDayRest,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -279,8 +291,8 @@ fun PlannerScreen(
         // Section Title: Day Activities List with FramedSectionHeader
         item {
             FramedSectionHeader(
-                title = "حرکات این روز",
-                badgeText = "${formatDigits(activities.size, language)} حرکت",
+                title = strings.plannerDayActivitiesSection,
+                badgeText = String.format(strings.plannerDayActivitiesBadge, formatDigits(activities.size, language)),
                 actionText = if (isTrainingDay) strings.addActivityBtn else null,
                 onActionClick = if (isTrainingDay) { { onAddActivity(selectedDayIndex) } } else null
             )
@@ -428,7 +440,7 @@ fun PlannerScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "عنوانی که خودتان می‌خواهید برای تمرین این روز ثبت کنید (مانند: سینه و جلو بازو، تمرین پایین‌تنه، استراحت فعال)",
+                        text = strings.plannerDayFocusPrompt,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

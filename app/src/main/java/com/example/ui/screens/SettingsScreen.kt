@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.DarkMode
@@ -119,9 +120,12 @@ fun SettingsScreen(
                     text = strings.settingsTitle,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif
+                        fontFamily = FontFamily.SansSerif,
+                        letterSpacing = 0.sp
                     ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    softWrap = false
                 )
                 Text(
                     text = strings.settingsSubtitle,
@@ -233,10 +237,10 @@ fun SettingsScreen(
             ) {
                 FramedSectionHeader(
                     title = strings.appearanceSection,
-                    badgeText = "طرح و پوسته"
+                    badgeText = strings.settingsAppearanceBadge
                 )
 
-                // Theme Mode 3-way Segmented Pill Toggle
+                // Theme Mode 3-way Segmented Pill Toggle with High-Visibility Selection Feedback
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.themeLabel,
@@ -248,7 +252,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
                             Triple(ThemeMode.DARK, strings.themeDark, Icons.Default.DarkMode),
@@ -256,16 +260,19 @@ fun SettingsScreen(
                             Triple(ThemeMode.SYSTEM, strings.themeSystem, Icons.Default.SettingsBrightness)
                         ).forEach { (mode, label, icon) ->
                             val isSelected = preferences.themeMode == mode
+                            val btnLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(42.dp)
                                     .then(
                                         if (isSelected) {
-                                            Modifier.tactileCard(
+                                            Modifier.tactileButton(
+                                                onClick = { onSetThemeMode(mode) },
                                                 shape = RoundedCornerShape(10.dp),
-                                                elevation = 2.dp,
-                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                                baseColor = accentColor,
+                                                lipColor = btnLip,
+                                                borderColor = accentColor.copy(alpha = 0.5f)
                                             )
                                         } else {
                                             Modifier
@@ -273,17 +280,25 @@ fun SettingsScreen(
                                                 .clickable { onSetThemeMode(mode) }
                                         }
                                     )
-                                    .clickable { onSetThemeMode(mode) },
+                                    .testTag("theme_${mode.name.lowercase()}"),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = null,
-                                        tint = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
@@ -292,7 +307,8 @@ fun SettingsScreen(
                                             fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
                                             fontFamily = FontFamily.SansSerif
                                         ),
-                                        color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1
                                     )
                                 }
                             }
@@ -302,7 +318,7 @@ fun SettingsScreen(
             }
         }
 
-        // 3. Preferences Bento Card (Language, Weight Unit, Reminder)
+        // 3. Preferences Bento Card (Language, Weight Unit) - Reminder Removed
         item {
             Column(
                 modifier = Modifier
@@ -312,11 +328,11 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 FramedSectionHeader(
-                    title = "تنظیمات کاربردی",
-                    badgeText = "واحدها و زبان"
+                    title = strings.settingsPracticalSection,
+                    badgeText = strings.settingsPracticalBadge
                 )
 
-                // Language Segmented Selector
+                // Language Segmented Selector with High-Visibility Selection Feedback
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.languageLabel,
@@ -328,7 +344,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
                             Pair(AppLanguage.PERSIAN, strings.langPersian),
@@ -337,16 +353,19 @@ fun SettingsScreen(
                             val lang = pair.first
                             val label = pair.second
                             val isSelected = preferences.language == lang
+                            val btnLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(40.dp)
+                                    .height(42.dp)
                                     .then(
                                         if (isSelected) {
-                                            Modifier.tactileCard(
+                                            Modifier.tactileButton(
+                                                onClick = { onSetLanguage(lang) },
                                                 shape = RoundedCornerShape(10.dp),
-                                                elevation = 2.dp,
-                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                                baseColor = accentColor,
+                                                lipColor = btnLip,
+                                                borderColor = accentColor.copy(alpha = 0.5f)
                                             )
                                         } else {
                                             Modifier
@@ -354,17 +373,30 @@ fun SettingsScreen(
                                                 .clickable { onSetLanguage(lang) }
                                         }
                                     )
-                                    .clickable { onSetLanguage(lang) },
+                                    .testTag("lang_${lang.name.lowercase()}"),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                        fontFamily = FontFamily.SansSerif
-                                    ),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                            fontFamily = FontFamily.SansSerif
+                                        ),
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -372,7 +404,7 @@ fun SettingsScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
 
-                // Weight Unit Segmented Selector
+                // Weight Unit Segmented Selector with High-Visibility Selection Feedback
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = strings.weightUnitLabel,
@@ -384,7 +416,7 @@ fun SettingsScreen(
                             .fillMaxWidth()
                             .tactileInset(shape = RoundedCornerShape(14.dp))
                             .padding(4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
                             Pair(WeightUnit.KG, strings.unitKg),
@@ -393,16 +425,19 @@ fun SettingsScreen(
                             val unit = pair.first
                             val label = pair.second
                             val isSelected = preferences.weightUnit == unit
+                            val btnLip = if (isDark) Color(0xFF064E3B) else Color(0xFF312E81)
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(40.dp)
+                                    .height(42.dp)
                                     .then(
                                         if (isSelected) {
-                                            Modifier.tactileCard(
+                                            Modifier.tactileButton(
+                                                onClick = { onSetWeightUnit(unit) },
                                                 shape = RoundedCornerShape(10.dp),
-                                                elevation = 2.dp,
-                                                backgroundColor = if (isDark) MaterialTheme.colorScheme.surfaceContainerHigh else Color.White
+                                                baseColor = accentColor,
+                                                lipColor = btnLip,
+                                                borderColor = accentColor.copy(alpha = 0.5f)
                                             )
                                         } else {
                                             Modifier
@@ -410,53 +445,33 @@ fun SettingsScreen(
                                                 .clickable { onSetWeightUnit(unit) }
                                         }
                                     )
-                                    .clickable { onSetWeightUnit(unit) },
+                                    .testTag("weight_unit_${unit.name.lowercase()}"),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = label,
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                        fontFamily = FontFamily.SansSerif
-                                    ),
-                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    if (isSelected) {
+                                        Icon(
+                                            imageVector = Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium.copy(
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
+                                            fontFamily = FontFamily.SansSerif
+                                        ),
+                                        color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
-
-                // Workout Reminder Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = strings.reminderLabel,
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = strings.reminderSub,
-                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-
-                    Switch(
-                        checked = preferences.workoutReminderEnabled,
-                        onCheckedChange = onSetReminder,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = accentColor,
-                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                        )
-                    )
                 }
             }
         }

@@ -25,9 +25,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
@@ -104,6 +106,15 @@ fun FitPlanBottomNav(
                     unselectedIcon = Icons.Outlined.CalendarMonth,
                     testTag = "nav_planner",
                     onClick = { onNavigate(AppScreen.PLANNER) }
+                )
+
+                DockNavItem(
+                    title = strings.navReport,
+                    selected = currentScreen == AppScreen.REPORT,
+                    selectedIcon = Icons.Filled.Analytics,
+                    unselectedIcon = Icons.Outlined.Analytics,
+                    testTag = "nav_report",
+                    onClick = { onNavigate(AppScreen.REPORT) }
                 )
 
                 DockNavItem(

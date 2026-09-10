@@ -145,4 +145,10 @@ class PreferencesManager(private val context: Context) {
             prefs[Keys.WEIGHT_HISTORY] = updated
         }
     }
+
+    suspend fun resetToFreshInstall() {
+        context.dataStore.edit { prefs ->
+            prefs.clear()
+        }
+    }
 }

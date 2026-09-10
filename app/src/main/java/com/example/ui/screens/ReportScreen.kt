@@ -31,11 +31,13 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -117,7 +119,7 @@ fun ReportScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     var showLogWeightDialog by remember { mutableStateOf(false) }
-    var showEditHeightDialog by remember { mutableStateOf(false) }
+    var showEditStatsDialog by remember { mutableStateOf(false) }
     var showFullCalendarDialog by remember { mutableStateOf(false) }
 
     // Parse weight history strictly from real user data
@@ -293,10 +295,10 @@ fun ReportScreen(
 
             // Section D: BMI Card with Multi-Segment Spectrum Bar
             item {
-                BmiSpectrumCard(
+                BmiCard(
                     weightKg = currentWeight,
                     heightCm = userHeightCm,
-                    onEditHeight = { showEditHeightDialog = true }
+                    onEditStats = { showEditStatsDialog = true }
                 )
             }
         }
@@ -318,14 +320,17 @@ fun ReportScreen(
         )
     }
 
-    // Dialog: Edit Height
-    if (showEditHeightDialog) {
-        EditHeightDialog(
+    // Dialog: Edit Body Stats (Height & Weight)
+    if (showEditStatsDialog) {
+        EditBodyStatsDialog(
             initialHeight = userHeightCm,
-            onDismiss = { showEditHeightDialog = false },
-            onConfirm = { newHeight ->
+            initialWeight = currentWeight,
+            weightUnit = weightUnit,
+            onDismiss = { showEditStatsDialog = false },
+            onConfirm = { newHeight, newWeight ->
                 onUpdateHeight(newHeight)
-                showEditHeightDialog = false
+                onLogWeight(newWeight)
+                showEditStatsDialog = false
             }
         )
     }
@@ -923,9 +928,41 @@ private fun WeightTrackerCard(
         CustomWeightLineChart(
             weightPoints = weightPoints,
             currentWeight = currentWeight,
+            weightUnit = weightUnit,
             isDark = isDark,
             language = language
         )
+
+        // Initial Benchmark Encouragement Caption (when only 1 entry exists)
+        if (weightPoints.size == 1) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(
+                        if (isDark) ElectricIndigo.copy(alpha = 0.15f) else ElectricIndigo.copy(alpha = 0.08f)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = ElectricIndigo,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = strings.reportInitialBenchmarkNotice,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontSize = 11.sp,
+                        letterSpacing = 0.sp,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
@@ -933,14 +970,16 @@ private fun WeightTrackerCard(
 private fun CustomWeightLineChart(
     weightPoints: List<WeightLogPoint>,
     currentWeight: Float,
+    weightUnit: WeightUnit,
     isDark: Boolean,
     language: AppLanguage,
     modifier: Modifier = Modifier
 ) {
     val primaryLineColor = ElectricIndigo
     val gridLineColor = if (isDark) Color(0xFF2A2E44) else Color(0xFFE5E7EB)
+    val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
 
-    // Dynamic min/max calculation based strictly on user's real weight points
+    // Dynamic min/max calculation based strictly on user's real weight points with 15% padding
     val (minVal, maxVal) = remember(weightPoints, currentWeight) {
         if (weightPoints.isEmpty()) {
             val base = if (currentWeight > 0f) currentWeight else 70f
@@ -951,8 +990,8 @@ private fun CustomWeightLineChart(
         } else {
             val minPt = weightPoints.minOf { it.weight }
             val maxPt = weightPoints.maxOf { it.weight }
-            val diff = (maxPt - minPt).coerceAtLeast(4f)
-            val pad = diff * 0.2f
+            val diff = (maxPt - minPt).coerceAtLeast(3f)
+            val pad = diff * 0.15f
             (minPt - pad).coerceAtLeast(0f) to (maxPt + pad)
         }
     }
@@ -975,12 +1014,11 @@ private fun CustomWeightLineChart(
                 val chartWidth = width - leftPadding - 16.dp.toPx()
                 val chartHeight = height - bottomPadding - 16.dp.toPx()
 
-                // Draw Y-axis guide lines
+                // Draw Y-axis guide lines (dashed horizontal reference gridlines)
                 ySteps.forEach { yVal ->
                     val ratio = ((yVal - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
                     val yPos = (height - bottomPadding) - ratio * chartHeight
 
-                    // Dashed horizontal grid line
                     drawLine(
                         color = gridLineColor,
                         start = Offset(leftPadding, yPos),
@@ -991,24 +1029,26 @@ private fun CustomWeightLineChart(
                 }
 
                 if (weightPoints.size == 1) {
-                    // With 1 point: Display a single clean point with active double ring
-                    val pt = weightPoints.first()
-                    val yRatio = ((pt.weight - minVal) / (maxVal - minVal)).coerceIn(0f, 1f)
+                    // With 1 point: Render dedicated single-point benchmark display at center
                     val centerOffset = Offset(
                         x = leftPadding + chartWidth / 2f,
-                        y = (height - bottomPadding) - yRatio * chartHeight
+                        y = (height - bottomPadding) - 0.5f * chartHeight
                     )
 
+                    // Triple concentric glowing benchmark marker
+                    // 1. Outer pulse ring (alpha = 0.20, radius = 14.dp)
                     drawCircle(
-                        color = primaryLineColor.copy(alpha = 0.25f),
-                        radius = 12.dp.toPx(),
+                        color = primaryLineColor.copy(alpha = 0.20f),
+                        radius = 14.dp.toPx(),
                         center = centerOffset
                     )
+                    // 2. Middle ring (ElectricIndigo, radius = 7.dp)
                     drawCircle(
                         color = primaryLineColor,
-                        radius = 6.dp.toPx(),
+                        radius = 7.dp.toPx(),
                         center = centerOffset
                     )
+                    // 3. Inner center (White, radius = 3.dp)
                     drawCircle(
                         color = Color.White,
                         radius = 3.dp.toPx(),
@@ -1023,7 +1063,7 @@ private fun CustomWeightLineChart(
                         Offset(x, y)
                     }
 
-                    // Construct smooth spline path
+                    // Construct smooth spline path (cubicTo)
                     val strokePath = Path().apply {
                         moveTo(points[0].x, points[0].y)
                         for (i in 0 until points.size - 1) {
@@ -1057,7 +1097,7 @@ private fun CustomWeightLineChart(
                         )
                     )
 
-                    // Draw curved line stroke
+                    // Draw curved line stroke (3.5.dp)
                     drawPath(
                         path = strokePath,
                         color = primaryLineColor,
@@ -1161,18 +1201,22 @@ private fun CustomWeightLineChart(
                 }
             }
 
-            // Active Tooltip for latest point: e.g. "67.0"
+            // Active Tooltip for latest point: e.g. "67.0 kg"
             if (weightPoints.isNotEmpty()) {
+                val tooltipWeight = if (weightPoints.size == 1) weightPoints.first().weight else currentWeight
                 Box(
                     modifier = Modifier
-                        .align(if (weightPoints.size == 1) Alignment.TopCenter else Alignment.TopEnd)
-                        .offset(x = if (weightPoints.size == 1) 0.dp else (-8).dp, y = 14.dp)
+                        .align(if (weightPoints.size == 1) Alignment.Center else Alignment.TopEnd)
+                        .offset(
+                            x = if (weightPoints.size == 1) 13.dp else (-8).dp,
+                            y = if (weightPoints.size == 1) (-36).dp else 14.dp
+                        )
                         .clip(RoundedCornerShape(8.dp))
                         .background(ElectricIndigo)
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = formatDigits(String.format(Locale.US, "%.1f", currentWeight), language),
+                        text = "${formatDigits(String.format(Locale.US, "%.1f", tooltipWeight), language)} $unitLabel",
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -1188,21 +1232,21 @@ private fun CustomWeightLineChart(
 }
 
 @Composable
-private fun BmiSpectrumCard(
+private fun BmiCard(
     weightKg: Float,
     heightCm: Float,
-    onEditHeight: () -> Unit,
+    onEditStats: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    // BMI calculation: weight / (h_m * h_m)
+    // Dynamic Mathematical Calculation
     val heightM = (heightCm / 100f).coerceAtLeast(0.5f)
-    val bmi = (weightKg / (heightM * heightM)).coerceIn(10f, 50f)
+    val bmi = (weightKg / (heightM * heightM)).coerceIn(10.0f, 50.0f)
 
-    // Category and color mapping
+    // 6 WHO classification tiers
     val (categoryTitle, categoryColor) = when {
         bmi < 16.0f -> strings.reportBmiSeverelyUnderweight to Color(0xFF2563EB)
         bmi < 18.5f -> strings.reportBmiUnderweight to Color(0xFF60A5FA)
@@ -1219,52 +1263,44 @@ private fun BmiSpectrumCard(
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header with BMI Title and Editable Height
+        // Card Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = strings.reportBmiTitle,
+                text = "BMI",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Black,
+                    fontSize = 20.sp
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            // Height chip with edit pencil icon
-            Row(
+            // Primary Tactile Action Button "Edit"
+            Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable(onClick = onEditHeight)
-                    .background(if (isDark) Color(0xFF1F2336) else Color(0xFFEFF1F7))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
-                    .testTag("btn_edit_height"),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .tactileButton(
+                        onClick = onEditStats,
+                        shape = RoundedCornerShape(12.dp),
+                        baseColor = ElectricIndigo,
+                        lipColor = Color(0xFF3730A3)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 7.dp)
+                    .testTag("btn_edit_bmi_stats"),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "${strings.reportHeightLabel}: ${formatDigits(heightCm.toInt(), language)} cm",
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.sp
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = strings.reportEditHeightTitle,
-                    tint = ElectricIndigo,
-                    modifier = Modifier.size(14.dp)
+                    text = strings.reportEditBtn,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
                 )
             }
         }
 
-        // BMI Number and Status Badge
+        // Value & Badge Row
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -1275,7 +1311,7 @@ private fun BmiSpectrumCard(
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Black,
                     fontFamily = FontFamily.SansSerif,
-                    fontSize = 32.sp,
+                    fontSize = 34.sp,
                     letterSpacing = 0.sp
                 ),
                 maxLines = 1,
@@ -1288,7 +1324,7 @@ private fun BmiSpectrumCard(
                 modifier = Modifier
                     .clip(RoundedCornerShape(10.dp))
                     .background(categoryColor.copy(alpha = if (isDark) 0.25f else 0.15f))
-                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                    .padding(horizontal = 10.dp, vertical = 6.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1304,20 +1340,84 @@ private fun BmiSpectrumCard(
                         text = categoryTitle,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isDark) categoryColor else categoryColor.copy(alpha = 0.9f)
-                        )
+                            color = if (isDark) categoryColor else categoryColor.copy(alpha = 0.95f),
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
         }
 
-        // Multi-Segment Spectrum Bar with Pointer Arrow
+        // 6-Segment Color Spectrum Bar with strict LTR coordinate lock
         BmiSpectrumBar(
             bmi = bmi,
             isDark = isDark,
             language = language
         )
+
+        // Height Display Row (at the bottom of the card)
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 2.dp),
+            thickness = 1.dp,
+            color = if (isDark) Color(0xFF252A40) else Color(0xFFE9ECF5)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(onClick = onEditStats)
+                .padding(vertical = 4.dp)
+                .testTag("btn_edit_height"),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = strings.reportHeightLabel,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "${formatDigits(heightCm.toInt(), language)} cm",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = strings.reportEditStatsTitle,
+                    tint = ElectricIndigo,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+        }
     }
+}
+
+@Composable
+private fun BmiSpectrumCard(
+    weightKg: Float,
+    heightCm: Float,
+    onEditHeight: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BmiCard(
+        weightKg = weightKg,
+        heightCm = heightCm,
+        onEditStats = onEditHeight,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -1327,13 +1427,6 @@ private fun BmiSpectrumBar(
     language: AppLanguage,
     modifier: Modifier = Modifier
 ) {
-    // 6 segments matching reference:
-    // 1: <16 (Blue #2563EB)
-    // 2: 16-18.5 (Light Blue #60A5FA)
-    // 3: 18.5-25 (Cyan/Teal #2DD4BF)
-    // 4: 25-30 (Yellow #FACC15)
-    // 5: 30-35 (Orange #FB923C)
-    // 6: 35-40+ (Red #F87171)
     val segmentColors = listOf(
         Color(0xFF2563EB),
         Color(0xFF60A5FA),
@@ -1361,7 +1454,7 @@ private fun BmiSpectrumBar(
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Column(modifier = modifier.fillMaxWidth()) {
-            // Pointer arrow above the bar
+            // Downward-pointing arrow indicator (▼)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1373,7 +1466,7 @@ private fun BmiSpectrumBar(
                     val arrowWidth = 10.dp.toPx()
 
                     val arrowPath = Path().apply {
-                        moveTo(arrowX, arrowHeight) // bottom point pointing at the bar
+                        moveTo(arrowX, arrowHeight) // tip points directly to top edge of spectrum bar
                         lineTo(arrowX - arrowWidth / 2f, 0f)
                         lineTo(arrowX + arrowWidth / 2f, 0f)
                         close()
@@ -1388,19 +1481,19 @@ private fun BmiSpectrumBar(
 
             Spacer(modifier = Modifier.height(3.dp))
 
-            // Segmented Bar
+            // Discrete rounded segments separated by 2.dp spacing. Height = 12.dp, shape = RoundedCornerShape(6.dp)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(12.dp)
-                    .clip(RoundedCornerShape(6.dp)),
-                horizontalArrangement = Arrangement.spacedBy(1.5.dp)
+                    .height(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 segmentColors.forEach { color ->
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxSize()
+                            .clip(RoundedCornerShape(6.dp))
                             .background(color)
                     )
                 }
@@ -1426,6 +1519,205 @@ private fun BmiSpectrumBar(
             }
         }
     }
+}
+
+@Composable
+private fun EditBodyStatsDialog(
+    initialHeight: Float,
+    initialWeight: Float,
+    weightUnit: WeightUnit,
+    onDismiss: () -> Unit,
+    onConfirm: (height: Float, weight: Float) -> Unit
+) {
+    val strings = LocalAppStrings.current
+    val language = LocalCurrentLanguage.current
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val unitLabel = WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)
+
+    var heightVal by remember { mutableFloatStateOf(if (initialHeight in 100f..250f) initialHeight else 175f) }
+    var heightText by remember { mutableStateOf(initialHeight.toInt().toString()) }
+
+    var weightVal by remember { mutableFloatStateOf(if (initialWeight in 30f..250f) initialWeight else 70.0f) }
+    var weightText by remember { mutableStateOf(String.format(Locale.US, "%.1f", initialWeight)) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = strings.reportEditStatsTitle,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Height Section
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = strings.reportSetupHeightLabel,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                                .clickable {
+                                    if (heightVal > 100f) {
+                                        heightVal -= 1f
+                                        heightText = heightVal.toInt().toString()
+                                    }
+                                }
+                                .testTag("btn_edit_height_minus"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "−",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        OutlinedTextField(
+                            value = heightText,
+                            onValueChange = { input ->
+                                heightText = input
+                                input.toFloatOrNull()?.let { heightVal = it.coerceIn(50f, 260f) }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("input_edit_height"),
+                            singleLine = true,
+                            suffix = { Text("cm") }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                                .clickable {
+                                    if (heightVal < 250f) {
+                                        heightVal += 1f
+                                        heightText = heightVal.toInt().toString()
+                                    }
+                                }
+                                .testTag("btn_edit_height_plus"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "+",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+
+                // Weight Section
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = strings.reportSetupWeightLabel,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                                .clickable {
+                                    if (weightVal > 30f) {
+                                        weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
+                                        weightText = String.format(Locale.US, "%.1f", weightVal)
+                                    }
+                                }
+                                .testTag("btn_edit_weight_minus"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "−",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        OutlinedTextField(
+                            value = weightText,
+                            onValueChange = { input ->
+                                weightText = input
+                                input.toFloatOrNull()?.let { weightVal = it.coerceIn(20f, 300f) }
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("input_edit_weight"),
+                            singleLine = true,
+                            suffix = { Text(unitLabel) }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
+                                .clickable {
+                                    if (weightVal < 250f) {
+                                        weightVal = (weightVal + 0.5f).coerceAtMost(250f)
+                                        weightText = String.format(Locale.US, "%.1f", weightVal)
+                                    }
+                                }
+                                .testTag("btn_edit_weight_plus"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "+",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val finalHeight = heightText.toFloatOrNull() ?: heightVal
+                    val finalWeight = weightText.toFloatOrNull() ?: weightVal
+                    if (finalHeight > 0f && finalWeight > 0f) {
+                        onConfirm(finalHeight, finalWeight)
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = ElectricIndigo),
+                modifier = Modifier.testTag("btn_confirm_edit_stats")
+            ) {
+                Text(strings.reportSaveStatsBtn, color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(strings.cancelBtn)
+            }
+        }
+    )
 }
 
 @Composable

@@ -141,4 +141,7 @@ interface FitPlanDao {
 
     @Query("DELETE FROM completed_activities")
     suspend fun clearAllCompletedActivities()
+
+    @Query("DELETE FROM user_profile")
+    suspend fun clearUserProfile()
 }

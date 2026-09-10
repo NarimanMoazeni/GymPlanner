@@ -557,6 +557,37 @@ class FitPlanRepository(
         }
     }
 
+    suspend fun resetToFreshInstall() {
+        withContext(Dispatchers.IO) {
+            dao.clearAllActivities()
+            dao.clearAllSessions()
+            dao.clearAllCompletedActivities()
+            dao.clearAllWorkoutDays()
+            dao.clearUserProfile()
+            preferencesManager.resetToFreshInstall()
+
+            dao.upsertUserProfile(
+                UserProfileEntity(
+                    id = 1,
+                    name = "",
+                    age = null,
+                    hasCompletedOnboarding = false
+                )
+            )
+
+            val cleanDays = (1..7).map { dayIndex ->
+                WorkoutDayEntity(
+                    dayOfWeek = dayIndex,
+                    isTrainingDay = false,
+                    focusName = "",
+                    focusSubtitle = "",
+                    estimatedDurationMinutes = 45
+                )
+            }
+            dao.upsertWorkoutDays(cleanDays)
+        }
+    }
+
     suspend fun preSeedDefaultDataIfEmpty() {
         withContext(Dispatchers.IO) {
             val existingProfile = dao.getUserProfileOnce()

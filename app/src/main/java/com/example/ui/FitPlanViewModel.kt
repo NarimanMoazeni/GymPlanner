@@ -1,6 +1,7 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppPreferences
@@ -34,7 +35,7 @@ enum class AppScreen {
 }
 
 data class FitPlanUiState(
-    val currentScreen: AppScreen = AppScreen.HOME,
+    val currentScreen: AppScreen = AppScreen.ONBOARDING,
     val profile: UserProfileEntity = UserProfileEntity(),
     val workoutDays: List<WorkoutDayEntity> = emptyList(),
     val activitiesByDay: Map<Int, List<ActivityEntity>> = emptyMap(),
@@ -78,7 +79,14 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
         }
 
         viewModelScope.launch {
-            repository.preSeedDefaultDataIfEmpty()
+            val launchPrefs = application.getSharedPreferences("fitplan_launch_prefs", Context.MODE_PRIVATE)
+            val isFreshInstallResetDone = launchPrefs.getBoolean("fresh_install_v3_ready", false)
+            if (!isFreshInstallResetDone) {
+                repository.resetToFreshInstall()
+                launchPrefs.edit().putBoolean("fresh_install_v3_ready", true).apply()
+            } else {
+                repository.preSeedDefaultDataIfEmpty()
+            }
         }
 
         // Combine flows to update UI state reactively
@@ -92,9 +100,13 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
             }.collect { (profile, days, prefs) ->
                 _uiState.update { current ->
                     val user = profile ?: UserProfileEntity()
-                    val targetScreen = if (!user.hasCompletedOnboarding && current.currentScreen == AppScreen.HOME) {
+                    val targetScreen = if (!user.hasCompletedOnboarding) {
                         AppScreen.ONBOARDING
-                    } else current.currentScreen
+                    } else if (current.currentScreen == AppScreen.ONBOARDING) {
+                        AppScreen.HOME
+                    } else {
+                        current.currentScreen
+                    }
 
                     current.copy(
                         profile = user,
@@ -168,6 +180,31 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.saveUserProfile("ورزشکار", 26, hasCompletedOnboarding = true)
             _uiState.update { it.copy(currentScreen = AppScreen.HOME) }
+        }
+    }
+
+    fun resetAppToFreshInstall() {
+        viewModelScope.launch {
+            repository.resetToFreshInstall()
+            _uiState.update {
+                it.copy(
+                    currentScreen = AppScreen.ONBOARDING,
+                    profile = UserProfileEntity(id = 1, name = "", age = null, hasCompletedOnboarding = false),
+                    workoutDays = (1..7).map { dayIndex ->
+                        WorkoutDayEntity(
+                            dayOfWeek = dayIndex,
+                            isTrainingDay = false,
+                            focusName = "",
+                            focusSubtitle = "",
+                            estimatedDurationMinutes = 45
+                        )
+                    },
+                    activitiesByDay = emptyMap(),
+                    completedActivitiesToday = emptyList(),
+                    allSessions = emptyList(),
+                    feedbackMessage = "برنامه به حالت تازه نصب شده بازنشانی شد."
+                )
+            }
         }
     }
 

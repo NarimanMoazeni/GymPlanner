@@ -8,661 +8,537 @@ enum class AppLanguage(val code: String, val title: String) {
     ENGLISH("en", "English (LTR)")
 }
 
-data class AppStrings(
-    val appName: String,
+open class AppStrings {
+
+    open val appName: String = "فیت پلن"
     // Nav
-    val navHome: String,
-    val navPlanner: String,
-    val navReport: String,
-    val navSettings: String,
+    open val navHome: String = "خانه"
+    open val navPlanner: String = "برنامه"
+    open val navReport: String = "گزارش"
+    open val navSettings: String = "تنظیمات"
     // Onboarding
-    val welcomeTitle: String,
-    val welcomeSubtitle: String,
-    val nameQuestion: String,
-    val requiredTag: String,
-    val namePlaceholder: String,
-    val ageLabel: String,
-    val optionalTag: String,
-    val yearsSuffix: String,
-    val startBtn: String,
-    val skipBtn: String,
-    val offlineTrustBadge: String,
+    open val welcomeTitle: String = "به Fit Plan خوش آمدی"
+    open val welcomeSubtitle: String = "برنامه‌ریز هفتگی تمرینات بدون نیاز به اینترنت و حساب کاربری"
+    open val nameQuestion: String = "اسمت چیه؟"
+    open val requiredTag: String = "ضروری"
+    open val namePlaceholder: String = "مثلاً: نیما یا سارا"
+    open val ageLabel: String = "سن"
+    open val optionalTag: String = "اختیاری"
+    open val yearsSuffix: String = "سال"
+    open val startBtn: String = "شروع کنیم"
+    open val skipBtn: String = "رد کردن"
+    open val offlineTrustBadge: String = "کاملاً آفلاین • داده‌ها روی دستگاه شما ذخیره می‌شوند"
     // Home
-    val greeting: String,
-    val todayHeader: String,
-    val heroReadyBadge: String,
-    val heroRestBadge: String,
-    val workoutDayCount: String,
-    val restDayTitle: String,
-    val restDayDesc: String,
-    val metricActivities: String,
-    val metricSets: String,
-    val metricEstMinutes: String,
-    val heroStartCta: String,
-    val heroPlanCta: String,
-    val weeklyReviewTitle: String,
-    val weeklyReviewSub: String,
-    val weeklyStatsBanner: String,
-    val todayProgressTitle: String,
-    val todayRemainingCount: String,
-    val todayProgressRatio: String,
-    val keyExercisesTitle: String,
-    val executionOrderTag: String,
-    val targetPrefix: String,
+    open val greeting: String = "سلام، %s"
+    open val todayHeader: String = "امروز • %s"
+    open val heroReadyBadge: String = "برنامه امروز آماده است"
+    open val heroRestBadge: String = "امروز روز استراحت است"
+    open val workoutDayCount: String = "تمرین روز %s"
+    open val restDayTitle: String = "روز استراحت و بازیابی عضلات"
+    open val restDayDesc: String = "امروز به عضلات خود زمان کافی برای ریکاوری بدهید یا حرکات سبک کششی انجام دهید."
+    open val metricActivities: String = "فعالیت"
+    open val metricSets: String = "ست"
+    open val metricEstMinutes: String = "دقیقه تخمین"
+    open val heroStartCta: String = "مشاهده برنامه و شروع"
+    open val heroPlanCta: String = "تنظیم برنامه هفتگی"
+    open val weeklyReviewTitle: String = "مرور هفته"
+    open val weeklyReviewSub: String = "برنامه ۷ روزه"
+    open val weeklyStatsBanner: String = "%d روز تمرین در این هفته • %d جلسه کامل شده"
+    open val todayProgressTitle: String = "پیشرفت فعالیت‌های امروز"
+    open val todayRemainingCount: String = "%d تمرین باقیمانده"
+    open val todayProgressRatio: String = "%d از %d فعالیت انجام شد (%s)"
+    open val keyExercisesTitle: String = "حرکات شاخص امروز"
+    open val executionOrderTag: String = "ترتیب اجرا"
+    open val targetPrefix: String = "هدف:"
     // Planner
-    val plannerTitle: String,
-    val plannerSubtitle: String,
-    val daysTrainingCount: String,
-    val restTag: String,
-    val workoutTag: String,
-    val todayTag: String,
-    val dayActivitiesCount: String,
-    val addActivityBtn: String,
-    val addActivityCalloutTitle: String,
-    val addActivityCalloutSub: String,
-    val toggleTrainingDay: String,
-    val toggleRestDay: String,
-    val copyPlanToDay: String,
-    val deleteActivityConfirm: String,
-    val deleteBtn: String,
-    val cancelBtn: String,
-    val duplicateBtn: String,
-    val editBtn: String,
-    val moveUpBtn: String,
-    val moveDownBtn: String,
-    val weeklyStatsTitle: String,
-    val weeklyStatsGoal: String,
-    val weeklyStatsCompleted: String,
-    val weeklyStatsHoursLogged: String,
-    val emptyPlanMessage: String,
-    val emptyPlanCta: String,
+    open val plannerTitle: String = "برنامه هفتگی"
+    open val plannerSubtitle: String = "روزهای تمرین و استراحت خود را سازماندهی کنید"
+    open val daysTrainingCount: String = "%d روز تمرین"
+    open val restTag: String = "استراحت"
+    open val workoutTag: String = "تمرین"
+    open val todayTag: String = "امروز"
+    open val dayActivitiesCount: String = "%d فعالیت ثبت‌شده"
+    open val addActivityBtn: String = "افزودن فعالیت"
+    open val addActivityCalloutTitle: String = "افزودن فعالیت جدید"
+    open val addActivityCalloutSub: String = "حرکت قدرتی، هوازی، یا کشش به %s اضافه کنید"
+    open val toggleTrainingDay: String = "این روز، روز تمرین است"
+    open val toggleRestDay: String = "تبدیل به روز استراحت"
+    open val copyPlanToDay: String = "کپی برنامه به روز دیگر"
+    open val deleteActivityConfirm: String = "آیا می‌خواهی این فعالیت حذف شود؟"
+    open val deleteBtn: String = "حذف"
+    open val cancelBtn: String = "انصراف"
+    open val duplicateBtn: String = "تکرار / کپی"
+    open val editBtn: String = "ویرایش"
+    open val moveUpBtn: String = "انتقال به بالا"
+    open val moveDownBtn: String = "انتقال به پایین"
+    open val weeklyStatsTitle: String = "آمار هفتگی تمرین"
+    open val weeklyStatsGoal: String = "هدف: %d جلسه"
+    open val weeklyStatsCompleted: String = "%d از %d روز تکمیل شده (%s)"
+    open val weeklyStatsHoursLogged: String = "%s ساعت ثبت‌شده"
+    open val emptyPlanMessage: String = "هنوز برای این روز فعالیتی ثبت نشده است"
+    open val emptyPlanCta: String = "ایجاد فعالیت جدید"
     // Activity Modal
-    val modalTitleAdd: String,
-    val modalTitleEdit: String,
-    val modalSubtitle: String,
-    val stepActivityName: String,
-    val stepIndicator: String,
-    val activityNamePlaceholder: String,
-    val stepActivityType: String,
-    val typeWeightReps: String,
-    val typeDuration: String,
-    val typeDistance: String,
-    val typeSimple: String,
-    val targetValuesHeader: String,
-    val unitHeader: String,
-    val setsLabel: String,
-    val repsLabel: String,
-    val weightLabel: String,
-    val durationLabel: String,
-    val distanceLabel: String,
-    val minutesUnit: String,
-    val kmUnit: String,
-    val lbsUnit: String,
-    val presetsLabel: String,
-    val quickLabel: String,
-    val commonLabel: String,
-    val tonnageTitle: String,
-    val tonnageDesc: String,
-    val strengthNotice: String,
-    val durationNotice: String,
-    val distanceNotice: String,
-    val simpleNotice: String,
-    val saveToPlanBtn: String,
-    val savedSuccess: String,
+    open val modalTitleAdd: String = "افزودن فعالیت جدید"
+    open val modalTitleEdit: String = "ویرایش فعالیت"
+    open val modalSubtitle: String = "نوع فعالیت و پارامترهای مرتبط را مشخص کنید"
+    open val stepActivityName: String = "نام فعالیت"
+    open val stepIndicator: String = "مرحله ۱ از ۳"
+    open val activityNamePlaceholder: String = "مثال: جلو بازو هالتر"
+    open val stepActivityType: String = "نوع فعالیت"
+    open val typeWeightReps: String = "وزنه و تکرار"
+    open val typeDuration: String = "مدت زمان"
+    open val typeDistance: String = "مسافت"
+    open val typeSimple: String = "فعالیت ساده"
+    open val targetValuesHeader: String = "تنظیم مقادیر هدف"
+    open val unitHeader: String = "واحد: %s"
+    open val setsLabel: String = "ست (Sets)"
+    open val repsLabel: String = "تکرار (Reps)"
+    open val weightLabel: String = "وزن (Weight)"
+    open val durationLabel: String = "مدت زمان"
+    open val distanceLabel: String = "مسافت"
+    open val minutesUnit: String = "دقیقه"
+    open val kmUnit: String = "کیلومتر"
+    open val lbsUnit: String = "پوند"
+    open val presetsLabel: String = "پیش‌فرض:"
+    open val quickLabel: String = "سریع:"
+    open val commonLabel: String = "رایج:"
+    open val tonnageTitle: String = "تطبیق خودکار بار تمرین"
+    open val tonnageDesc: String = "مجموع تناژ هدف برای این حرکت: %s %s"
+    open val strengthNotice: String = "فیلد وزن برای فعالیت‌های قدرتی فعال است. برای هوازی مدت زمان نمایش داده خواهد شد."
+    open val durationNotice: String = "مدت زمان انجام این فعالیت را به دقیقه مشخص کنید."
+    open val distanceNotice: String = "مسافت هدف برای این فعالیت را مشخص کنید."
+    open val simpleNotice: String = "این فعالیت نیازی به وارد کردن مقادیر عددی ندارد و صرفاً وضعیت انجام آن ثبت می‌شود."
+    open val saveToPlanBtn: String = "ذخیره در برنامه"
+    open val savedSuccess: String = "ثبت گردید"
     // Active Workout
-    val activeWorkoutTitle: String,
-    val todayWorkoutBadge: String,
-    val sessionProgressTitle: String,
-    val sessionProgressRatio: String,
-    val statusDone: String,
-    val statusActive: String,
-    val statusInQueue: String,
-    val setLabel: String,
-    val markExerciseDoneBtn: String,
-    val restTimerTitle: String,
-    val add30SecBtn: String,
-    val resetTimerBtn: String,
-    val finishSessionBtn: String,
-    val sessionFinishedSuccess: String,
-    val previousRecordLabel: String,
+    open val activeWorkoutTitle: String = "تمرین فعال"
+    open val todayWorkoutBadge: String = "جلسه فعال"
+    open val sessionProgressTitle: String = "پیشرفت جلسه"
+    open val sessionProgressRatio: String = "%d از %d انجام شد (%s)"
+    open val statusDone: String = "انجام شد"
+    open val statusActive: String = "در حال اجرا"
+    open val statusInQueue: String = "در صف"
+    open val setLabel: String = "ست %d"
+    open val markExerciseDoneBtn: String = "ثبت پایان این حرکت"
+    open val restTimerTitle: String = "استراحت بین ست‌ها"
+    open val add30SecBtn: String = "+۳۰ ثانیه"
+    open val resetTimerBtn: String = "تنظیم مجدد"
+    open val finishSessionBtn: String = "اتمام جلسه تمرینی امروز"
+    open val sessionFinishedSuccess: String = "تمرین با موفقیت ثبت شد"
+    open val previousRecordLabel: String = "رکورد قبلی: %s"
     // Settings
-    val settingsTitle: String,
-    val settingsSubtitle: String,
-    val offlineAccountDesc: String,
-    val offlineChip: String,
-    val generalSection: String,
-    val weightUnitLabel: String,
-    val weightUnitSub: String,
-    val unitKg: String,
-    val unitLbs: String,
-    val reminderLabel: String,
-    val reminderSub: String,
-    val appearanceSection: String,
-    val themeLabel: String,
-    val themeDark: String,
-    val themeLight: String,
-    val themeSystem: String,
-    val languageLabel: String,
-    val langPersian: String,
-    val langEnglish: String,
-    val backupSection: String,
-    val backupDesc: String,
-    val backupExportBtn: String,
-    val backupImportBtn: String,
-    val lastBackupLabel: String,
-    val noBackupYet: String,
-    val versionFooter: String,
-    val confirmRestoreTitle: String,
-    val confirmRestoreMsg: String,
-    val restoreSuccess: String,
-    val restoreError: String,
-    val exportSuccess: String,
+    open val settingsTitle: String = "تنظیمات"
+    open val settingsSubtitle: String = "مدیریت اولویت‌ها و داده‌های محلی دستگاه"
+    open val offlineAccountDesc: String = "حساب کاملاً آفلاین • ذخیره‌سازی محلی روی حافظه گوشی"
+    open val offlineChip: String = "آفلاین"
+    open val generalSection: String = "تنظیمات عمومی"
+    open val weightUnitLabel: String = "واحد وزن"
+    open val weightUnitSub: String = "واحد نمایش و ثبت رکوردها"
+    open val unitKg: String = "کیلوگرم (kg)"
+    open val unitLbs: String = "پوند (lbs)"
+    open val reminderLabel: String = "اعلان یادآور تمرین"
+    open val reminderSub: String = "یادآوری قبل از ساعت شروع برنامه"
+    open val appearanceSection: String = "تم و ظاهر"
+    open val themeLabel: String = "تم محیط کاربری"
+    open val themeDark: String = "تیره"
+    open val themeLight: String = "روشن"
+    open val themeSystem: String = "سیستم"
+    open val languageLabel: String = "زبان برنامه"
+    open val langPersian: String = "فارسی (RTL)"
+    open val langEnglish: String = "English (LTR)"
+    open val backupSection: String = "پشتیبان‌گیری و بازیابی داده‌ها"
+    open val backupDesc: String = "از تمام برنامه‌های هفتگی خود فایل خروجی آفلاین بگیرید تا در صورت تغییر گوشی داده‌هایتان حفظ شود."
+    open val backupExportBtn: String = "پشتیبان‌گیری از داده‌ها (ایجاد فایل بکاپ)"
+    open val backupImportBtn: String = "بازیابی اطلاعات (انتخاب فایل پشتیبان)"
+    open val lastBackupLabel: String = "آخرین پشتیبان: %s"
+    open val noBackupYet: String = "هنوز پشتیبانی گرفته نشده"
+    open val versionFooter: String = "Fit Plan • نسخه ۱.۰.۰ آفلاین"
+    open val confirmRestoreTitle: String = "بازیابی فایل پشتیبان"
+    open val confirmRestoreMsg: String = "با بازیابی این فایل، داده‌های فعلی جایگزین خواهند شد. آیا ادامه می‌دهید؟"
+    open val restoreSuccess: String = "اطلاعات با موفقیت بازیابی شد"
+    open val restoreError: String = "فایل پشتیبان نامعتبر است"
+    open val exportSuccess: String = "فایل پشتیبان ذخیره شد"
     // Validation
-    val errInvalidValue: String,
-    val errNegativeWeight: String,
-    val errEnterSets: String,
-    val errEnterName: String,
+    open val errInvalidValue: String = "مقدار وارد شده نامعتبر است."
+    open val errNegativeWeight: String = "وزن نمی‌تواند منفی باشد."
+    open val errEnterSets: String = "لطفاً تعداد ست‌ها را وارد کنید."
+    open val errEnterName: String = "لطفاً نام فعالیت را وارد کنید."
     // Custom Goal & Focus
-    val weeklyGoalTitle: String = "اهداف این هفته",
-    val editGoalTitle: String = "ویرایش هدف این هفته",
-    val weeklyGoalPlaceholder: String = "هدف این هفته خود را بنویسید (مثلاً ۴ جلسه تمرین سنگین + ۲۰ دقیقه هوازی)...",
-    val setGoalCta: String = "+ تنظیم هدف این هفته",
-    val editWeeklyGoalTitle: String = "هدف این هفته",
-    val editWeeklyGoalPlaceholder: String = "هدف تمرینی خود برای این هفته را بنویسید...",
-    val editDayFocusTitle: String = "عنوان یا تمرکز تمرین",
-    val editDayFocusPlaceholder: String = "مثلاً: سینه و جلو بازو، تمرین پا، هوازی...",
-    val saveGoalBtn: String = "ذخیره",
-    val setFocusCta: String = "تعیین تمرکز یا عنوان تمرین",
-    val activityDoneBadge: String = "انجام شد",
+    open val weeklyGoalTitle: String = "اهداف این هفته"
+    open val editGoalTitle: String = "ویرایش هدف این هفته"
+    open val weeklyGoalPlaceholder: String = "هدف این هفته خود را بنویسید (مثلاً ۴ جلسه تمرین سنگین + ۲۰ دقیقه هوازی)..."
+    open val setGoalCta: String = "+ تنظیم هدف این هفته"
+    open val editWeeklyGoalTitle: String = "هدف این هفته"
+    open val editWeeklyGoalPlaceholder: String = "هدف تمرینی خود برای این هفته را بنویسید..."
+    open val editDayFocusTitle: String = "عنوان یا تمرکز تمرین"
+    open val editDayFocusPlaceholder: String = "مثلاً: سینه و جلو بازو، تمرین پا، هوازی..."
+    open val saveGoalBtn: String = "ذخیره"
+    open val setFocusCta: String = "تعیین تمرکز یا عنوان تمرین"
+    open val activityDoneBadge: String = "انجام شد"
     // Phase 3 Final Polish strings
-    val homeGreetingFormat: String = "سلام، %s! 👋🔥",
-    val homeStatusTraining: String = "امروز روز تمرین است",
-    val homeStatusRest: String = "امروز روز استراحت و ریکاوری است",
-    val homeWeeklySectionTitle: String = "برنامه این هفته",
-    val homeWeeklyBadge: String = "%s روز تمرین",
-    val homeViewCalendar: String = "مشاهده تقویم",
-    val homeTodayActivitiesSection: String = "فعالیت‌های امروز",
-    val homeTodayActivitiesBadge: String = "%s حرکت",
-    val homeViewDetails: String = "مشاهده جزئیات",
-    val homeTodayProgramBadge: String = "برنامه امروز",
-    val homeDefaultFocusName: String = "تمرین عمومی",
-    val homeDefaultFocusSubtitle: String = "تمرکز روی برنامه امروز",
-    val homeCompletedOfTotalActivities: String = "%s از %s فعالیت انجام شده",
-    val homeContinueWorkout: String = "ادامه تمرین امروز",
-    val homeRestHeroTitle: String = "روز استراحت و ریکاوری",
-    val homeRestHeroDesc: String = "عضلات در زمان استراحت رشد و بازسازی می‌شوند.",
-    val homeCheckOtherDays: String = "بررسی برنامه سایر روزها",
-    val homeWeeklyGoalDialogPrompt: String = "هدف شخصی تمرین، تغذیه یا رکوردهای ورزشی خود در این هفته را وارد کنید:",
-    val homePlannedDaysSummary: String = "%s روز تمرین برنامه‌ریزی شده در این هفته",
-    val plannerDayTrainingCount: String = "روز تمرین (%s حرکت)",
-    val plannerDayRest: String = "روز استراحت",
-    val plannerDayActivitiesSection: String = "حرکات این روز",
-    val plannerDayActivitiesBadge: String = "%s حرکت",
-    val plannerDayFocusPrompt: String = "عنوانی که خودتان می‌خواهید برای تمرین این روز ثبت کنید (مانند: سینه و جلو بازو، تمرین پایین‌تنه، استراحت فعال)",
-    val settingsProfileAgeFormat: String = "%s سال",
-    val settingsProfileAgeNone: String = "بدون ثبت سن",
-    val settingsProfileSubtitle: String = "%s • برنامه هفتگی شخصی",
-    val settingsAppearanceBadge: String = "طرح و پوسته",
-    val settingsPracticalSection: String = "تنظیمات کاربردی",
-    val settingsPracticalBadge: String = "واحدها و زبان",
-    val settingsBackupBadge: String = "داده‌ها و پشتیبان",
-    val settingsSecurityDesc: String = "تمامی اطلاعات، تمرینات، وزنه‌ها و جلسات شما به صورت کاملاً امن فقط در حافظه گوشی ذخیره شده و به هیچ سروری منتقل نمی‌شود.",
-    val settingsProfileNameLabel: String = "نام",
-    val settingsProfileAgeLabel: String = "سن",
-    val settingsExportDialogDesc: String = "کد پشتیبان شما آماده است. می‌توانید آن را کپی کرده و در محل امنی نگهداری کنید:",
-    val settingsCopyToClipboard: String = "کپی در کلیپ‌بورد",
-    val settingsImportDialogDesc: String = "متن فایل پشتیبان (JSON) را در کادر زیر وارد کنید:",
-    val settingsImportEmptyError: String = "لطفاً متن فایل پشتیبان را وارد کنید",
-    val settingsImportInvalidError: String = "ساختار فایل پشتیبان نامعتبر است",
-    val settingsRestorePlanBtn: String = "بازیابی برنامه",
-    val activeWorkoutProgressBadge: String = "%s / %s",
-    val activeWorkoutPlannedSets: String = "ست‌های برنامه‌ریزی شده:",
-    val activeWorkoutWeightLabel: String = "وزن: %s %s",
-    val activeWorkoutSetBadge: String = "ست %s",
-    val activeWorkoutRepsBadge: String = "%s تکرار",
-    val activeWorkoutSetAndReps: String = "%s ست × %s تکرار",
-    val exerciseTypeBadge: String = "نوع تمرین",
+    open val homeGreetingFormat: String = "سلام، %s! 👋🔥"
+    open val homeStatusTraining: String = "امروز روز تمرین است"
+    open val homeStatusRest: String = "امروز روز استراحت و ریکاوری است"
+    open val homeWeeklySectionTitle: String = "برنامه این هفته"
+    open val homeWeeklyBadge: String = "%s روز تمرین"
+    open val homeViewCalendar: String = "مشاهده تقویم"
+    open val homeTodayActivitiesSection: String = "فعالیت‌های امروز"
+    open val homeTodayActivitiesBadge: String = "%s حرکت"
+    open val homeViewDetails: String = "مشاهده جزئیات"
+    open val homeTodayProgramBadge: String = "برنامه امروز"
+    open val homeDefaultFocusName: String = "تمرین عمومی"
+    open val homeDefaultFocusSubtitle: String = "تمرکز روی برنامه امروز"
+    open val homeCompletedOfTotalActivities: String = "%s از %s فعالیت انجام شده"
+    open val homeContinueWorkout: String = "ادامه تمرین امروز"
+    open val homeRestHeroTitle: String = "روز استراحت و ریکاوری"
+    open val homeRestHeroDesc: String = "عضلات در زمان استراحت رشد و بازسازی می‌شوند."
+    open val homeCheckOtherDays: String = "بررسی برنامه سایر روزها"
+    open val homeWeeklyGoalDialogPrompt: String = "هدف شخصی تمرین، تغذیه یا رکوردهای ورزشی خود در این هفته را وارد کنید:"
+    open val homePlannedDaysSummary: String = "%s روز تمرین برنامه‌ریزی شده در این هفته"
+    open val plannerDayTrainingCount: String = "روز تمرین (%s حرکت)"
+    open val plannerDayRest: String = "روز استراحت"
+    open val plannerDayActivitiesSection: String = "حرکات این روز"
+    open val plannerDayActivitiesBadge: String = "%s حرکت"
+    open val plannerDayFocusPrompt: String = "عنوانی که خودتان می‌خواهید برای تمرین این روز ثبت کنید (مانند: سینه و جلو بازو، تمرین پایین‌تنه، استراحت فعال)"
+    open val settingsProfileAgeFormat: String = "%s سال"
+    open val settingsProfileAgeNone: String = "بدون ثبت سن"
+    open val settingsProfileSubtitle: String = "%s • برنامه هفتگی شخصی"
+    open val settingsAppearanceBadge: String = "طرح و پوسته"
+    open val settingsPracticalSection: String = "تنظیمات کاربردی"
+    open val settingsPracticalBadge: String = "واحدها و زبان"
+    open val settingsBackupBadge: String = "داده‌ها و پشتیبان"
+    open val settingsSecurityDesc: String = "تمامی اطلاعات، تمرینات، وزنه‌ها و جلسات شما به صورت کاملاً امن فقط در حافظه گوشی ذخیره شده و به هیچ سروری منتقل نمی‌شود."
+    open val settingsProfileNameLabel: String = "نام"
+    open val settingsProfileAgeLabel: String = "سن"
+    open val settingsExportDialogDesc: String = "کد پشتیبان شما آماده است. می‌توانید آن را کپی کرده و در محل امنی نگهداری کنید:"
+    open val settingsCopyToClipboard: String = "کپی در کلیپ‌بورد"
+    open val settingsImportDialogDesc: String = "متن فایل پشتیبان (JSON) را در کادر زیر وارد کنید:"
+    open val settingsImportEmptyError: String = "لطفاً متن فایل پشتیبان را وارد کنید"
+    open val settingsImportInvalidError: String = "ساختار فایل پشتیبان نامعتبر است"
+    open val settingsRestorePlanBtn: String = "بازیابی برنامه"
+    open val settingsResetFreshTitle: String = "بازنشانی به حالت تازه نصب شده"
+    open val settingsResetFreshDesc: String = "تمامی برنامه‌ها، وزن‌ها و اطلاعات ورزشی پاک شده و صفحه راه‌اندازی اولیه نمایش داده می‌شود."
+    open val settingsResetFreshBtn: String = "راه‌اندازی مجدد برنامه"
+    open val settingsResetConfirmTitle: String = "آیا مطمئن هستید؟"
+    open val settingsResetConfirmMsg: String = "تمامی اطلاعات، تمرینات و رکوردهای شما حذف خواهد شد و به مرحله شروع خوش‌آمدگویی هدایت می‌شوید."
+    open val activeWorkoutProgressBadge: String = "%s / %s"
+    open val activeWorkoutPlannedSets: String = "ست‌های برنامه‌ریزی شده:"
+    open val activeWorkoutWeightLabel: String = "وزن: %s %s"
+    open val activeWorkoutSetBadge: String = "ست %s"
+    open val activeWorkoutRepsBadge: String = "%s تکرار"
+    open val activeWorkoutSetAndReps: String = "%s ست × %s تکرار"
+    open val exerciseTypeBadge: String = "نوع تمرین"
     // Report Screen Strings
-    val reportTitle: String = "گزارش و پیشرفت",
-    val reportSubtitle: String = "آمار عملکرد، وزن و شاخص‌های سلامت بدن",
-    val reportWorkoutCount: String = "تعداد تمرین",
-    val reportKcalBurned: String = "کالری تخمینی",
-    val reportMinutesTrained: String = "زمان کل تمرین",
-    val reportSessionUnit: String = "جلسه",
-    val reportKcalUnit: String = "کیلوکالری",
-    val reportMinUnit: String = "دقیقه",
-    val reportHistoryStreak: String = "روند تمرین و تسلسل روزها",
-    val reportDayStreakBadge: String = "تسلسل تمرین 🔥 %s روز",
-    val reportAllRecords: String = "نمایش همه",
-    val reportCloseRecords: String = "بستن",
-    val reportWeightHeader: String = "وزن بدن",
-    val reportLogBtn: String = "ثبت",
-    val reportLogWeightTitle: String = "ثبت وزن جدید",
-    val reportEnterWeightPrompt: String = "وزن فعلی خود را وارد کنید:",
-    val reportCurrentWeight: String = "وزن فعلی",
-    val reportHeaviest: String = "بیشترین وزن",
-    val reportLightest: String = "کمترین وزن",
-    val reportBmiTitle: String = "شاخص توده بدنی (BMI)",
-    val reportHeightLabel: String = "قد",
-    val reportEditHeightTitle: String = "ویرایش قد",
-    val reportEnterHeightPrompt: String = "قد خود را به سانتی‌متر وارد کنید:",
-    val reportBmiSeverelyUnderweight: String = "کمبود وزن شدید",
-    val reportBmiUnderweight: String = "کمبود وزن",
-    val reportBmiHealthy: String = "وزن متناسب",
-    val reportBmiOverweight: String = "اضافه وزن",
-    val reportBmiObese1: String = "چاقی درجه ۱",
-    val reportBmiObese2: String = "چاقی درجه ۲+",
+    open val reportTitle: String = "گزارش و پیشرفت"
+    open val reportSubtitle: String = "آمار عملکرد، وزن و شاخص‌های سلامت بدن"
+    open val reportWorkoutCount: String = "تعداد تمرین"
+    open val reportKcalBurned: String = "کالری تخمینی"
+    open val reportMinutesTrained: String = "زمان کل تمرین"
+    open val reportSessionUnit: String = "جلسه"
+    open val reportKcalUnit: String = "کیلوکالری"
+    open val reportMinUnit: String = "دقیقه"
+    open val reportHistoryStreak: String = "روند تمرین و تسلسل روزها"
+    open val reportDayStreakBadge: String = "تسلسل تمرین 🔥 %s روز"
+    open val reportAllRecords: String = "نمایش همه"
+    open val reportCloseRecords: String = "بستن"
+    open val reportWeightHeader: String = "وزن بدن"
+    open val reportLogBtn: String = "ثبت"
+    open val reportLogWeightTitle: String = "ثبت وزن جدید"
+    open val reportEnterWeightPrompt: String = "وزن فعلی خود را وارد کنید:"
+    open val reportCurrentWeight: String = "وزن فعلی"
+    open val reportHeaviest: String = "بیشترین وزن"
+    open val reportLightest: String = "کمترین وزن"
+    open val reportBmiTitle: String = "شاخص توده بدنی (BMI)"
+    open val reportHeightLabel: String = "قد"
+    open val reportEditHeightTitle: String = "ویرایش قد"
+    open val reportEnterHeightPrompt: String = "قد خود را به سانتی‌متر وارد کنید:"
+    open val reportBmiSeverelyUnderweight: String = "کمبود وزن شدید"
+    open val reportBmiUnderweight: String = "کمبود وزن"
+    open val reportBmiHealthy: String = "وزن متناسب"
+    open val reportBmiOverweight: String = "اضافه وزن"
+    open val reportBmiObese1: String = "چاقی درجه ۱"
+    open val reportBmiObese2: String = "چاقی درجه ۲+"
+    open val reportEditBtn: String = "ویرایش"
+    open val reportEditStatsTitle: String = "ویرایش قد و وزن"
+    open val reportSaveStatsBtn: String = "ذخیره تغییرات"
+    open val reportInitialBenchmarkNotice: String = "وزن مرجع اولیه ثبت شد • برای رسم نمودار روند، در روزهای آینده نیز وزن خود را ثبت کنید"
     // Report Setup Strings
-    val reportSetupTitle: String = "تنظیم قد و وزن اولیه",
-    val reportSetupDesc: String = "برای محاسبه شاخص BMI و رسم نمودار روند وزن، قد و وزن اولیه خود را وارد کنید",
-    val reportSetupBtn: String = "ثبت و محاسبه گزارش",
-    val reportSetupHeightLabel: String = "قد (سانتی‌متر)",
-    val reportSetupWeightLabel: String = "وزن اولیه (کیلوگرم)",
+    open val reportSetupTitle: String = "تنظیم قد و وزن اولیه"
+    open val reportSetupDesc: String = "برای محاسبه شاخص BMI و رسم نمودار روند وزن، قد و وزن اولیه خود را وارد کنید"
+    open val reportSetupBtn: String = "ثبت و محاسبه گزارش"
+    open val reportSetupHeightLabel: String = "قد (سانتی‌متر)"
+    open val reportSetupWeightLabel: String = "وزن اولیه (کیلوگرم)"
     // Monthly Calendar Strings
-    val calendarViewFullMonth: String = "نمایش تقویم ماه",
-    val calendarHideMonth: String = "بستن تقویم ماه",
-    val calendarDaysWithWorkout: String = "روزهای دارای تمرین",
-    val calendarSelectedDay: String = "روز انتخاب‌شده",
-    val calendarTodayBadge: String = "امروز"
-)
+    open val calendarViewFullMonth: String = "نمایش تقویم ماه"
+    open val calendarHideMonth: String = "بستن تقویم ماه"
+    open val calendarDaysWithWorkout: String = "روزهای دارای تمرین"
+    open val calendarSelectedDay: String = "روز انتخاب‌شده"
+    open val calendarTodayBadge: String = "امروز"
+}
 
-val PersianStrings = AppStrings(
-    appName = "فیت پلن",
-    navHome = "خانه",
-    navPlanner = "برنامه",
-    navReport = "گزارش",
-    navSettings = "تنظیمات",
-    welcomeTitle = "به Fit Plan خوش آمدی",
-    welcomeSubtitle = "برنامه‌ریز هفتگی تمرینات بدون نیاز به اینترنت و حساب کاربری",
-    nameQuestion = "اسمت چیه؟",
-    requiredTag = "ضروری",
-    namePlaceholder = "مثلاً: نیما یا سارا",
-    ageLabel = "سن",
-    optionalTag = "اختیاری",
-    yearsSuffix = "سال",
-    startBtn = "شروع کنیم",
-    skipBtn = "رد کردن",
-    offlineTrustBadge = "کاملاً آفلاین • داده‌ها روی دستگاه شما ذخیره می‌شوند",
-    greeting = "سلام، %s",
-    todayHeader = "امروز • %s",
-    heroReadyBadge = "برنامه امروز آماده است",
-    heroRestBadge = "امروز روز استراحت است",
-    workoutDayCount = "تمرین روز %s",
-    restDayTitle = "روز استراحت و بازیابی عضلات",
-    restDayDesc = "امروز به عضلات خود زمان کافی برای ریکاوری بدهید یا حرکات سبک کششی انجام دهید.",
-    metricActivities = "فعالیت",
-    metricSets = "ست",
-    metricEstMinutes = "دقیقه تخمین",
-    heroStartCta = "مشاهده برنامه و شروع",
-    heroPlanCta = "تنظیم برنامه هفتگی",
-    weeklyReviewTitle = "مرور هفته",
-    weeklyReviewSub = "برنامه ۷ روزه",
-    weeklyStatsBanner = "%d روز تمرین در این هفته • %d جلسه کامل شده",
-    todayProgressTitle = "پیشرفت فعالیت‌های امروز",
-    todayRemainingCount = "%d تمرین باقیمانده",
-    todayProgressRatio = "%d از %d فعالیت انجام شد (%s)",
-    keyExercisesTitle = "حرکات شاخص امروز",
-    executionOrderTag = "ترتیب اجرا",
-    targetPrefix = "هدف:",
-    plannerTitle = "برنامه هفتگی",
-    plannerSubtitle = "روزهای تمرین و استراحت خود را سازماندهی کنید",
-    daysTrainingCount = "%d روز تمرین",
-    restTag = "استراحت",
-    workoutTag = "تمرین",
-    todayTag = "امروز",
-    dayActivitiesCount = "%d فعالیت ثبت‌شده",
-    addActivityBtn = "افزودن فعالیت",
-    addActivityCalloutTitle = "افزودن فعالیت جدید",
-    addActivityCalloutSub = "حرکت قدرتی، هوازی، یا کشش به %s اضافه کنید",
-    toggleTrainingDay = "این روز، روز تمرین است",
-    toggleRestDay = "تبدیل به روز استراحت",
-    copyPlanToDay = "کپی برنامه به روز دیگر",
-    deleteActivityConfirm = "آیا می‌خواهی این فعالیت حذف شود؟",
-    deleteBtn = "حذف",
-    cancelBtn = "انصراف",
-    duplicateBtn = "تکرار / کپی",
-    editBtn = "ویرایش",
-    moveUpBtn = "انتقال به بالا",
-    moveDownBtn = "انتقال به پایین",
-    weeklyStatsTitle = "آمار هفتگی تمرین",
-    weeklyStatsGoal = "هدف: %d جلسه",
-    weeklyStatsCompleted = "%d از %d روز تکمیل شده (%s)",
-    weeklyStatsHoursLogged = "%s ساعت ثبت‌شده",
-    emptyPlanMessage = "هنوز برای این روز فعالیتی ثبت نشده است",
-    emptyPlanCta = "ایجاد فعالیت جدید",
-    modalTitleAdd = "افزودن فعالیت جدید",
-    modalTitleEdit = "ویرایش فعالیت",
-    modalSubtitle = "نوع فعالیت و پارامترهای مرتبط را مشخص کنید",
-    stepActivityName = "نام فعالیت",
-    stepIndicator = "مرحله ۱ از ۳",
-    activityNamePlaceholder = "مثال: جلو بازو هالتر",
-    stepActivityType = "نوع فعالیت",
-    typeWeightReps = "وزنه و تکرار",
-    typeDuration = "مدت زمان",
-    typeDistance = "مسافت",
-    typeSimple = "فعالیت ساده",
-    targetValuesHeader = "تنظیم مقادیر هدف",
-    unitHeader = "واحد: %s",
-    setsLabel = "ست (Sets)",
-    repsLabel = "تکرار (Reps)",
-    weightLabel = "وزن (Weight)",
-    durationLabel = "مدت زمان",
-    distanceLabel = "مسافت",
-    minutesUnit = "دقیقه",
-    kmUnit = "کیلومتر",
-    lbsUnit = "پوند",
-    presetsLabel = "پیش‌فرض:",
-    quickLabel = "سریع:",
-    commonLabel = "رایج:",
-    tonnageTitle = "تطبیق خودکار بار تمرین",
-    tonnageDesc = "مجموع تناژ هدف برای این حرکت: %s %s",
-    strengthNotice = "فیلد وزن برای فعالیت‌های قدرتی فعال است. برای هوازی مدت زمان نمایش داده خواهد شد.",
-    durationNotice = "مدت زمان انجام این فعالیت را به دقیقه مشخص کنید.",
-    distanceNotice = "مسافت هدف برای این فعالیت را مشخص کنید.",
-    simpleNotice = "این فعالیت نیازی به وارد کردن مقادیر عددی ندارد و صرفاً وضعیت انجام آن ثبت می‌شود.",
-    saveToPlanBtn = "ذخیره در برنامه",
-    savedSuccess = "ثبت گردید",
-    activeWorkoutTitle = "تمرین فعال",
-    todayWorkoutBadge = "جلسه فعال",
-    sessionProgressTitle = "پیشرفت جلسه",
-    sessionProgressRatio = "%d از %d انجام شد (%s)",
-    statusDone = "انجام شد",
-    statusActive = "در حال اجرا",
-    statusInQueue = "در صف",
-    setLabel = "ست %d",
-    markExerciseDoneBtn = "ثبت پایان این حرکت",
-    restTimerTitle = "استراحت بین ست‌ها",
-    add30SecBtn = "+۳۰ ثانیه",
-    resetTimerBtn = "تنظیم مجدد",
-    finishSessionBtn = "اتمام جلسه تمرینی امروز",
-    sessionFinishedSuccess = "تمرین با موفقیت ثبت شد",
-    previousRecordLabel = "رکورد قبلی: %s",
-    settingsTitle = "تنظیمات",
-    settingsSubtitle = "مدیریت اولویت‌ها و داده‌های محلی دستگاه",
-    offlineAccountDesc = "حساب کاملاً آفلاین • ذخیره‌سازی محلی روی حافظه گوشی",
-    offlineChip = "آفلاین",
-    generalSection = "تنظیمات عمومی",
-    weightUnitLabel = "واحد وزن",
-    weightUnitSub = "واحد نمایش و ثبت رکوردها",
-    unitKg = "کیلوگرم (kg)",
-    unitLbs = "پوند (lbs)",
-    reminderLabel = "اعلان یادآور تمرین",
-    reminderSub = "یادآوری قبل از ساعت شروع برنامه",
-    appearanceSection = "تم و ظاهر",
-    themeLabel = "تم محیط کاربری",
-    themeDark = "تیره",
-    themeLight = "روشن",
-    themeSystem = "سیستم",
-    languageLabel = "زبان برنامه",
-    langPersian = "فارسی (RTL)",
-    langEnglish = "English (LTR)",
-    backupSection = "پشتیبان‌گیری و بازیابی داده‌ها",
-    backupDesc = "از تمام برنامه‌های هفتگی خود فایل خروجی آفلاین بگیرید تا در صورت تغییر گوشی داده‌هایتان حفظ شود.",
-    backupExportBtn = "پشتیبان‌گیری از داده‌ها (ایجاد فایل بکاپ)",
-    backupImportBtn = "بازیابی اطلاعات (انتخاب فایل پشتیبان)",
-    lastBackupLabel = "آخرین پشتیبان: %s",
-    noBackupYet = "هنوز پشتیبانی گرفته نشده",
-    versionFooter = "Fit Plan • نسخه ۱.۰.۰ آفلاین",
-    confirmRestoreTitle = "بازیابی فایل پشتیبان",
-    confirmRestoreMsg = "با بازیابی این فایل، داده‌های فعلی جایگزین خواهند شد. آیا ادامه می‌دهید؟",
-    restoreSuccess = "اطلاعات با موفقیت بازیابی شد",
-    restoreError = "فایل پشتیبان نامعتبر است",
-    exportSuccess = "فایل پشتیبان ذخیره شد",
-    errInvalidValue = "مقدار واردشده صحیح نیست.",
-    errNegativeWeight = "وزن نمی‌تواند منفی باشد.",
-    errEnterSets = "لطفاً تعداد ست‌ها را وارد کنید.",
-    errEnterName = "لطفاً نام فعالیت را وارد کنید."
-)
+val PersianStrings: AppStrings = AppStrings()
 
-val EnglishStrings = AppStrings(
-    appName = "Fit Plan",
-    navHome = "Home",
-    navPlanner = "Planner",
-    navReport = "Report",
-    navSettings = "Settings",
-    welcomeTitle = "Welcome to Fit Plan",
-    welcomeSubtitle = "Weekly workout planner without internet or accounts needed",
-    nameQuestion = "What is your name?",
-    requiredTag = "Required",
-    namePlaceholder = "e.g. Nima or Sara",
-    ageLabel = "Age",
-    optionalTag = "Optional",
-    yearsSuffix = "years",
-    startBtn = "Get Started",
-    skipBtn = "Skip",
-    offlineTrustBadge = "100% Offline • Data is stored safely on your device",
-    greeting = "Hello, %s",
-    todayHeader = "Today • %s",
-    heroReadyBadge = "Today's workout is ready",
-    heroRestBadge = "Today is a rest day",
-    workoutDayCount = "Workout Day %s",
-    restDayTitle = "Muscle Recovery & Rest Day",
-    restDayDesc = "Allow your body sufficient rest and recovery today, or do gentle mobility work.",
-    metricActivities = "Activities",
-    metricSets = "Sets",
-    metricEstMinutes = "Est. Min",
-    heroStartCta = "View Plan & Start",
-    heroPlanCta = "Organize Weekly Plan",
-    weeklyReviewTitle = "Weekly Overview",
-    weeklyReviewSub = "7-day cycle",
-    weeklyStatsBanner = "%d training days this week • %d sessions completed",
-    todayProgressTitle = "Today's Workout Progress",
-    todayRemainingCount = "%d exercises remaining",
-    todayProgressRatio = "%d of %d exercises completed (%s)",
-    keyExercisesTitle = "Key Exercises Today",
-    executionOrderTag = "Execution Order",
-    targetPrefix = "Target:",
-    plannerTitle = "Weekly Planner",
-    plannerSubtitle = "Organize your workout and recovery days",
-    daysTrainingCount = "%d Training Days",
-    restTag = "Rest",
-    workoutTag = "Workout",
-    todayTag = "Today",
-    dayActivitiesCount = "%d activities planned",
-    addActivityBtn = "Add Activity",
-    addActivityCalloutTitle = "Add New Activity",
-    addActivityCalloutSub = "Add strength, cardio, or mobility to %s",
-    toggleTrainingDay = "Mark as training day",
-    toggleRestDay = "Mark as rest day",
-    copyPlanToDay = "Copy plan to another day",
-    deleteActivityConfirm = "Do you want to delete this activity?",
-    deleteBtn = "Delete",
-    cancelBtn = "Cancel",
-    duplicateBtn = "Duplicate",
-    editBtn = "Edit",
-    moveUpBtn = "Move Up",
-    moveDownBtn = "Move Down",
-    weeklyStatsTitle = "Weekly Workout Stats",
-    weeklyStatsGoal = "Goal: %d sessions",
-    weeklyStatsCompleted = "%d of %d days completed (%s)",
-    weeklyStatsHoursLogged = "%s hours logged",
-    emptyPlanMessage = "No activities planned for this day yet",
-    emptyPlanCta = "Add First Activity",
-    modalTitleAdd = "Add New Activity",
-    modalTitleEdit = "Edit Activity",
-    modalSubtitle = "Choose activity type and configure target values",
-    stepActivityName = "Activity Name",
-    stepIndicator = "Step 1 of 3",
-    activityNamePlaceholder = "e.g. Barbell Curl",
-    stepActivityType = "Activity Type",
-    typeWeightReps = "Weight & Reps",
-    typeDuration = "Duration",
-    typeDistance = "Distance",
-    typeSimple = "Simple Activity",
-    targetValuesHeader = "Target Values",
-    unitHeader = "Unit: %s",
-    setsLabel = "Sets",
-    repsLabel = "Reps",
-    weightLabel = "Weight",
-    durationLabel = "Duration",
-    distanceLabel = "Distance",
-    minutesUnit = "min",
-    kmUnit = "km",
-    lbsUnit = "lbs",
-    presetsLabel = "Presets:",
-    quickLabel = "Quick:",
-    commonLabel = "Common:",
-    tonnageTitle = "Automatic Load Calculation",
-    tonnageDesc = "Total target volume for this activity: %s %s",
-    strengthNotice = "Weight and rep fields are active for strength exercises.",
-    durationNotice = "Specify target duration in minutes.",
-    distanceNotice = "Specify target distance for this exercise.",
-    simpleNotice = "This activity requires only completion confirmation without numeric parameters.",
-    saveToPlanBtn = "Save to Plan",
-    savedSuccess = "Saved",
-    activeWorkoutTitle = "Active Workout",
-    todayWorkoutBadge = "Active Session",
-    sessionProgressTitle = "Session Progress",
-    sessionProgressRatio = "%d of %d completed (%s)",
-    statusDone = "Done",
-    statusActive = "In Progress",
-    statusInQueue = "Queued",
-    setLabel = "Set %d",
-    markExerciseDoneBtn = "Mark Exercise Complete",
-    restTimerTitle = "Rest Between Sets",
-    add30SecBtn = "+30s",
-    resetTimerBtn = "Reset",
-    finishSessionBtn = "Finish Today's Workout",
-    sessionFinishedSuccess = "Workout logged successfully",
-    previousRecordLabel = "Previous record: %s",
-    settingsTitle = "Settings",
-    settingsSubtitle = "Manage preferences and local device data",
-    offlineAccountDesc = "100% Offline Account • Local storage on this device",
-    offlineChip = "Offline",
-    generalSection = "General Preferences",
-    weightUnitLabel = "Weight Unit",
-    weightUnitSub = "Unit used for weights and record logs",
-    unitKg = "Kilograms (kg)",
-    unitLbs = "Pounds (lbs)",
-    reminderLabel = "Workout Reminder",
-    reminderSub = "Notify before planned workout time",
-    appearanceSection = "Theme & Appearance",
-    themeLabel = "Interface Theme",
-    themeDark = "Dark",
-    themeLight = "Light",
-    themeSystem = "System",
-    languageLabel = "App Language",
-    langPersian = "فارسی (RTL)",
-    langEnglish = "English (LTR)",
-    backupSection = "Backup & Data Recovery",
-    backupDesc = "Export an offline backup file to keep your workout history and schedules safe.",
-    backupExportBtn = "Backup Data (Export JSON)",
-    backupImportBtn = "Restore Data (Import JSON)",
-    lastBackupLabel = "Last backup: %s",
-    noBackupYet = "No backup created yet",
-    versionFooter = "Fit Plan • v1.0.0 Offline",
-    confirmRestoreTitle = "Restore Backup",
-    confirmRestoreMsg = "Restoring this backup file will replace current plans and records. Continue?",
-    restoreSuccess = "Data restored successfully",
-    restoreError = "Invalid backup file format",
-    exportSuccess = "Backup file created successfully",
-    errInvalidValue = "Please enter a valid value.",
-    errNegativeWeight = "Weight cannot be negative.",
-    errEnterSets = "Please enter at least 1 set.",
-    errEnterName = "Please enter an activity name.",
+private class EnglishStringsImpl : AppStrings() {
+
+    override val appName: String = "Fit Plan"
+    override val navHome: String = "Home"
+    override val navPlanner: String = "Planner"
+    override val navReport: String = "Report"
+    override val navSettings: String = "Settings"
+    override val welcomeTitle: String = "Welcome to Fit Plan"
+    override val welcomeSubtitle: String = "Weekly workout planner without internet or accounts needed"
+    override val nameQuestion: String = "What is your name?"
+    override val requiredTag: String = "Required"
+    override val namePlaceholder: String = "e.g. Nima or Sara"
+    override val ageLabel: String = "Age"
+    override val optionalTag: String = "Optional"
+    override val yearsSuffix: String = "years"
+    override val startBtn: String = "Get Started"
+    override val skipBtn: String = "Skip"
+    override val offlineTrustBadge: String = "100% Offline • Data is stored safely on your device"
+    override val greeting: String = "Hello, %s"
+    override val todayHeader: String = "Today • %s"
+    override val heroReadyBadge: String = "Today's workout is ready"
+    override val heroRestBadge: String = "Today is a rest day"
+    override val workoutDayCount: String = "Workout Day %s"
+    override val restDayTitle: String = "Muscle Recovery & Rest Day"
+    override val restDayDesc: String = "Allow your body sufficient rest and recovery today, or do gentle mobility work."
+    override val metricActivities: String = "Activities"
+    override val metricSets: String = "Sets"
+    override val metricEstMinutes: String = "Est. Min"
+    override val heroStartCta: String = "View Plan & Start"
+    override val heroPlanCta: String = "Organize Weekly Plan"
+    override val weeklyReviewTitle: String = "Weekly Overview"
+    override val weeklyReviewSub: String = "7-day cycle"
+    override val weeklyStatsBanner: String = "%d training days this week • %d sessions completed"
+    override val todayProgressTitle: String = "Today's Workout Progress"
+    override val todayRemainingCount: String = "%d exercises remaining"
+    override val todayProgressRatio: String = "%d of %d exercises completed (%s)"
+    override val keyExercisesTitle: String = "Key Exercises Today"
+    override val executionOrderTag: String = "Execution Order"
+    override val targetPrefix: String = "Target:"
+    override val plannerTitle: String = "Weekly Planner"
+    override val plannerSubtitle: String = "Organize your workout and recovery days"
+    override val daysTrainingCount: String = "%d Training Days"
+    override val restTag: String = "Rest"
+    override val workoutTag: String = "Workout"
+    override val todayTag: String = "Today"
+    override val dayActivitiesCount: String = "%d activities planned"
+    override val addActivityBtn: String = "Add Activity"
+    override val addActivityCalloutTitle: String = "Add New Activity"
+    override val addActivityCalloutSub: String = "Add strength, cardio, or mobility to %s"
+    override val toggleTrainingDay: String = "Mark as training day"
+    override val toggleRestDay: String = "Mark as rest day"
+    override val copyPlanToDay: String = "Copy plan to another day"
+    override val deleteActivityConfirm: String = "Do you want to delete this activity?"
+    override val deleteBtn: String = "Delete"
+    override val cancelBtn: String = "Cancel"
+    override val duplicateBtn: String = "Duplicate"
+    override val editBtn: String = "Edit"
+    override val moveUpBtn: String = "Move Up"
+    override val moveDownBtn: String = "Move Down"
+    override val weeklyStatsTitle: String = "Weekly Workout Stats"
+    override val weeklyStatsGoal: String = "Goal: %d sessions"
+    override val weeklyStatsCompleted: String = "%d of %d days completed (%s)"
+    override val weeklyStatsHoursLogged: String = "%s hours logged"
+    override val emptyPlanMessage: String = "No activities planned for this day yet"
+    override val emptyPlanCta: String = "Add First Activity"
+    override val modalTitleAdd: String = "Add New Activity"
+    override val modalTitleEdit: String = "Edit Activity"
+    override val modalSubtitle: String = "Choose activity type and configure target values"
+    override val stepActivityName: String = "Activity Name"
+    override val stepIndicator: String = "Step 1 of 3"
+    override val activityNamePlaceholder: String = "e.g. Barbell Curl"
+    override val stepActivityType: String = "Activity Type"
+    override val typeWeightReps: String = "Weight & Reps"
+    override val typeDuration: String = "Duration"
+    override val typeDistance: String = "Distance"
+    override val typeSimple: String = "Simple Activity"
+    override val targetValuesHeader: String = "Target Values"
+    override val unitHeader: String = "Unit: %s"
+    override val setsLabel: String = "Sets"
+    override val repsLabel: String = "Reps"
+    override val weightLabel: String = "Weight"
+    override val durationLabel: String = "Duration"
+    override val distanceLabel: String = "Distance"
+    override val minutesUnit: String = "min"
+    override val kmUnit: String = "km"
+    override val lbsUnit: String = "lbs"
+    override val presetsLabel: String = "Presets:"
+    override val quickLabel: String = "Quick:"
+    override val commonLabel: String = "Common:"
+    override val tonnageTitle: String = "Automatic Load Calculation"
+    override val tonnageDesc: String = "Total target volume for this activity: %s %s"
+    override val strengthNotice: String = "Weight and rep fields are active for strength exercises."
+    override val durationNotice: String = "Specify target duration in minutes."
+    override val distanceNotice: String = "Specify target distance for this exercise."
+    override val simpleNotice: String = "This activity requires only completion confirmation without numeric parameters."
+    override val saveToPlanBtn: String = "Save to Plan"
+    override val savedSuccess: String = "Saved"
+    override val activeWorkoutTitle: String = "Active Workout"
+    override val todayWorkoutBadge: String = "Active Session"
+    override val sessionProgressTitle: String = "Session Progress"
+    override val sessionProgressRatio: String = "%d of %d completed (%s)"
+    override val statusDone: String = "Done"
+    override val statusActive: String = "In Progress"
+    override val statusInQueue: String = "Queued"
+    override val setLabel: String = "Set %d"
+    override val markExerciseDoneBtn: String = "Mark Exercise Complete"
+    override val restTimerTitle: String = "Rest Between Sets"
+    override val add30SecBtn: String = "+30s"
+    override val resetTimerBtn: String = "Reset"
+    override val finishSessionBtn: String = "Finish Today's Workout"
+    override val sessionFinishedSuccess: String = "Workout logged successfully"
+    override val previousRecordLabel: String = "Previous record: %s"
+    override val settingsTitle: String = "Settings"
+    override val settingsSubtitle: String = "Manage preferences and local device data"
+    override val offlineAccountDesc: String = "100% Offline Account • Local storage on this device"
+    override val offlineChip: String = "Offline"
+    override val generalSection: String = "General Preferences"
+    override val weightUnitLabel: String = "Weight Unit"
+    override val weightUnitSub: String = "Unit used for weights and record logs"
+    override val unitKg: String = "Kilograms (kg)"
+    override val unitLbs: String = "Pounds (lbs)"
+    override val reminderLabel: String = "Workout Reminder"
+    override val reminderSub: String = "Notify before planned workout time"
+    override val appearanceSection: String = "Theme & Appearance"
+    override val themeLabel: String = "Interface Theme"
+    override val themeDark: String = "Dark"
+    override val themeLight: String = "Light"
+    override val themeSystem: String = "System"
+    override val languageLabel: String = "App Language"
+    override val langPersian: String = "فارسی (RTL)"
+    override val langEnglish: String = "English (LTR)"
+    override val backupSection: String = "Backup & Data Recovery"
+    override val backupDesc: String = "Export an offline backup file to keep your workout history and schedules safe."
+    override val backupExportBtn: String = "Backup Data (Export JSON)"
+    override val backupImportBtn: String = "Restore Data (Import JSON)"
+    override val lastBackupLabel: String = "Last backup: %s"
+    override val noBackupYet: String = "No backup created yet"
+    override val versionFooter: String = "Fit Plan • v1.0.0 Offline"
+    override val confirmRestoreTitle: String = "Restore Backup"
+    override val confirmRestoreMsg: String = "Restoring this backup file will replace current plans and records. Continue?"
+    override val restoreSuccess: String = "Data restored successfully"
+    override val restoreError: String = "Invalid backup file format"
+    override val exportSuccess: String = "Backup file created successfully"
+    override val errInvalidValue: String = "Please enter a valid value."
+    override val errNegativeWeight: String = "Weight cannot be negative."
+    override val errEnterSets: String = "Please enter at least 1 set."
+    override val errEnterName: String = "Please enter an activity name."
     // Custom Goal & Focus
-    weeklyGoalTitle = "Weekly Goals",
-    editGoalTitle = "Edit Weekly Goal",
-    weeklyGoalPlaceholder = "Write your weekly goal (e.g. 4 heavy sessions + 20 min cardio)...",
-    setGoalCta = "+ Set Weekly Goal",
-    editWeeklyGoalTitle = "Weekly Goal",
-    editWeeklyGoalPlaceholder = "Write your training goal for this week...",
-    editDayFocusTitle = "Workout Title / Focus",
-    editDayFocusPlaceholder = "e.g. Chest & Biceps, Leg Day, Active Recovery...",
-    saveGoalBtn = "Save",
-    setFocusCta = "Set Day Focus or Title",
-    activityDoneBadge = "Done",
+    override val weeklyGoalTitle: String = "Weekly Goals"
+    override val editGoalTitle: String = "Edit Weekly Goal"
+    override val weeklyGoalPlaceholder: String = "Write your weekly goal (e.g. 4 heavy sessions + 20 min cardio)..."
+    override val setGoalCta: String = "+ Set Weekly Goal"
+    override val editWeeklyGoalTitle: String = "Weekly Goal"
+    override val editWeeklyGoalPlaceholder: String = "Write your training goal for this week..."
+    override val editDayFocusTitle: String = "Workout Title / Focus"
+    override val editDayFocusPlaceholder: String = "e.g. Chest & Biceps, Leg Day, Active Recovery..."
+    override val saveGoalBtn: String = "Save"
+    override val setFocusCta: String = "Set Day Focus or Title"
+    override val activityDoneBadge: String = "Done"
     // Phase 3 Final Polish strings
-    homeGreetingFormat = "Hello, %s! 👋🔥",
-    homeStatusTraining = "Today is a workout day",
-    homeStatusRest = "Today is a rest & recovery day",
-    homeWeeklySectionTitle = "This Week's Schedule",
-    homeWeeklyBadge = "%s workout days",
-    homeViewCalendar = "View Calendar",
-    homeTodayActivitiesSection = "Today's Activities",
-    homeTodayActivitiesBadge = "%s exercises",
-    homeViewDetails = "View Details",
-    homeTodayProgramBadge = "Today's Plan",
-    homeDefaultFocusName = "General Workout",
-    homeDefaultFocusSubtitle = "Focus on today's program",
-    homeCompletedOfTotalActivities = "%s of %s exercises completed",
-    homeContinueWorkout = "Continue Today's Workout",
-    homeRestHeroTitle = "Rest & Recovery Day",
-    homeRestHeroDesc = "Muscles grow and repair while resting.",
-    homeCheckOtherDays = "Check Other Days",
-    homeWeeklyGoalDialogPrompt = "Enter your personal goal for workouts, nutrition, or records this week:",
-    homePlannedDaysSummary = "%s workout days planned this week",
-    plannerDayTrainingCount = "Workout Day (%s exercises)",
-    plannerDayRest = "Rest Day",
-    plannerDayActivitiesSection = "Exercises for This Day",
-    plannerDayActivitiesBadge = "%s exercises",
-    plannerDayFocusPrompt = "Enter the title you want for this day's workout (e.g. Chest & Biceps, Lower Body, Active Recovery)",
-    settingsProfileAgeFormat = "%s yrs",
-    settingsProfileAgeNone = "No age recorded",
-    settingsProfileSubtitle = "%s • Personal Weekly Plan",
-    settingsAppearanceBadge = "Theme & Style",
-    settingsPracticalSection = "Practical Settings",
-    settingsPracticalBadge = "Units & Language",
-    settingsBackupBadge = "Data & Backup",
-    settingsSecurityDesc = "All your workouts, weights, sets, and sessions are safely stored on your device memory only and never sent to any server.",
-    settingsProfileNameLabel = "Name",
-    settingsProfileAgeLabel = "Age",
-    settingsExportDialogDesc = "Your backup data is ready. You can copy and save it securely:",
-    settingsCopyToClipboard = "Copy to Clipboard",
-    settingsImportDialogDesc = "Enter the backup JSON text below:",
-    settingsImportEmptyError = "Please enter backup JSON text",
-    settingsImportInvalidError = "Invalid backup data structure",
-    settingsRestorePlanBtn = "Restore Workout Plan",
-    activeWorkoutProgressBadge = "%s / %s",
-    activeWorkoutPlannedSets = "Planned sets:",
-    activeWorkoutWeightLabel = "Weight: %s %s",
-    activeWorkoutSetBadge = "Set %s",
-    activeWorkoutRepsBadge = "%s reps",
-    activeWorkoutSetAndReps = "%s sets × %s reps",
-    exerciseTypeBadge = "Exercise Type",
+    override val homeGreetingFormat: String = "Hello, %s! 👋🔥"
+    override val homeStatusTraining: String = "Today is a workout day"
+    override val homeStatusRest: String = "Today is a rest & recovery day"
+    override val homeWeeklySectionTitle: String = "This Week's Schedule"
+    override val homeWeeklyBadge: String = "%s workout days"
+    override val homeViewCalendar: String = "View Calendar"
+    override val homeTodayActivitiesSection: String = "Today's Activities"
+    override val homeTodayActivitiesBadge: String = "%s exercises"
+    override val homeViewDetails: String = "View Details"
+    override val homeTodayProgramBadge: String = "Today's Plan"
+    override val homeDefaultFocusName: String = "General Workout"
+    override val homeDefaultFocusSubtitle: String = "Focus on today's program"
+    override val homeCompletedOfTotalActivities: String = "%s of %s exercises completed"
+    override val homeContinueWorkout: String = "Continue Today's Workout"
+    override val homeRestHeroTitle: String = "Rest & Recovery Day"
+    override val homeRestHeroDesc: String = "Muscles grow and repair while resting."
+    override val homeCheckOtherDays: String = "Check Other Days"
+    override val homeWeeklyGoalDialogPrompt: String = "Enter your personal goal for workouts, nutrition, or records this week:"
+    override val homePlannedDaysSummary: String = "%s workout days planned this week"
+    override val plannerDayTrainingCount: String = "Workout Day (%s exercises)"
+    override val plannerDayRest: String = "Rest Day"
+    override val plannerDayActivitiesSection: String = "Exercises for This Day"
+    override val plannerDayActivitiesBadge: String = "%s exercises"
+    override val plannerDayFocusPrompt: String = "Enter the title you want for this day's workout (e.g. Chest & Biceps, Lower Body, Active Recovery)"
+    override val settingsProfileAgeFormat: String = "%s yrs"
+    override val settingsProfileAgeNone: String = "No age recorded"
+    override val settingsProfileSubtitle: String = "%s • Personal Weekly Plan"
+    override val settingsAppearanceBadge: String = "Theme & Style"
+    override val settingsPracticalSection: String = "Practical Settings"
+    override val settingsPracticalBadge: String = "Units & Language"
+    override val settingsBackupBadge: String = "Data & Backup"
+    override val settingsSecurityDesc: String = "All your workouts, weights, sets, and sessions are safely stored on your device memory only and never sent to any server."
+    override val settingsProfileNameLabel: String = "Name"
+    override val settingsProfileAgeLabel: String = "Age"
+    override val settingsExportDialogDesc: String = "Your backup data is ready. You can copy and save it securely:"
+    override val settingsCopyToClipboard: String = "Copy to Clipboard"
+    override val settingsImportDialogDesc: String = "Enter the backup JSON text below:"
+    override val settingsImportEmptyError: String = "Please enter backup JSON text"
+    override val settingsImportInvalidError: String = "Invalid backup data structure"
+    override val settingsRestorePlanBtn: String = "Restore Workout Plan"
+    override val settingsResetFreshTitle: String = "Reset to Fresh Install"
+    override val settingsResetFreshDesc: String = "All plans, weights, and records will be deleted and the initial onboarding setup will be shown."
+    override val settingsResetFreshBtn: String = "Reset App to Fresh State"
+    override val settingsResetConfirmTitle: String = "Are you sure?"
+    override val settingsResetConfirmMsg: String = "All your activities, workout days, and history will be cleared and you will be redirected to the welcome onboarding screen."
+    override val activeWorkoutProgressBadge: String = "%s / %s"
+    override val activeWorkoutPlannedSets: String = "Planned sets:"
+    override val activeWorkoutWeightLabel: String = "Weight: %s %s"
+    override val activeWorkoutSetBadge: String = "Set %s"
+    override val activeWorkoutRepsBadge: String = "%s reps"
+    override val activeWorkoutSetAndReps: String = "%s sets × %s reps"
+    override val exerciseTypeBadge: String = "Exercise Type"
     // Report Screen Strings
-    reportTitle = "Progress Report",
-    reportSubtitle = "Performance, weight, and body health analytics",
-    reportWorkoutCount = "Workouts",
-    reportKcalBurned = "Kcal Burned",
-    reportMinutesTrained = "Minutes Trained",
-    reportSessionUnit = "sessions",
-    reportKcalUnit = "kcal",
-    reportMinUnit = "min",
-    reportHistoryStreak = "Training History & Streak",
-    reportDayStreakBadge = "Day Streak 🔥 %s days",
-    reportAllRecords = "All records",
-    reportCloseRecords = "Close",
-    reportWeightHeader = "Weight",
-    reportLogBtn = "Log",
-    reportLogWeightTitle = "Log New Weight",
-    reportEnterWeightPrompt = "Enter your current weight:",
-    reportCurrentWeight = "Current",
-    reportHeaviest = "Heaviest",
-    reportLightest = "Lightest",
-    reportBmiTitle = "Body Mass Index (BMI)",
-    reportHeightLabel = "Height",
-    reportEditHeightTitle = "Edit Height",
-    reportEnterHeightPrompt = "Enter your height in centimeters:",
-    reportBmiSeverelyUnderweight = "Very severely underweight",
-    reportBmiUnderweight = "Underweight",
-    reportBmiHealthy = "Healthy weight",
-    reportBmiOverweight = "Overweight",
-    reportBmiObese1 = "Obese Class I",
-    reportBmiObese2 = "Obese Class II+",
+    override val reportTitle: String = "Progress Report"
+    override val reportSubtitle: String = "Performance, weight, and body health analytics"
+    override val reportWorkoutCount: String = "Workouts"
+    override val reportKcalBurned: String = "Kcal Burned"
+    override val reportMinutesTrained: String = "Minutes Trained"
+    override val reportSessionUnit: String = "sessions"
+    override val reportKcalUnit: String = "kcal"
+    override val reportMinUnit: String = "min"
+    override val reportHistoryStreak: String = "Training History & Streak"
+    override val reportDayStreakBadge: String = "Day Streak 🔥 %s days"
+    override val reportAllRecords: String = "All records"
+    override val reportCloseRecords: String = "Close"
+    override val reportWeightHeader: String = "Weight"
+    override val reportLogBtn: String = "Log"
+    override val reportLogWeightTitle: String = "Log New Weight"
+    override val reportEnterWeightPrompt: String = "Enter your current weight:"
+    override val reportCurrentWeight: String = "Current"
+    override val reportHeaviest: String = "Heaviest"
+    override val reportLightest: String = "Lightest"
+    override val reportBmiTitle: String = "Body Mass Index (BMI)"
+    override val reportHeightLabel: String = "Height"
+    override val reportEditHeightTitle: String = "Edit Height"
+    override val reportEnterHeightPrompt: String = "Enter your height in centimeters:"
+    override val reportBmiSeverelyUnderweight: String = "Very severely underweight"
+    override val reportBmiUnderweight: String = "Underweight"
+    override val reportBmiHealthy: String = "Healthy weight"
+    override val reportBmiOverweight: String = "Overweight"
+    override val reportBmiObese1: String = "Obese Class I"
+    override val reportBmiObese2: String = "Obese Class II+"
+    override val reportEditBtn: String = "Edit"
+    override val reportEditStatsTitle: String = "Edit Height & Weight"
+    override val reportSaveStatsBtn: String = "Save Changes"
+    override val reportInitialBenchmarkNotice: String = "Initial benchmark recorded • Log more points to trace your trend curve"
     // Report Setup Strings
-    reportSetupTitle = "Setup Your Body Stats",
-    reportSetupDesc = "Enter your initial height and weight to calculate BMI and track your weight trends",
-    reportSetupBtn = "Save & Generate Report",
-    reportSetupHeightLabel = "Height (cm)",
-    reportSetupWeightLabel = "Initial Weight (kg)",
+    override val reportSetupTitle: String = "Setup Your Body Stats"
+    override val reportSetupDesc: String = "Enter your initial height and weight to calculate BMI and track your weight trends"
+    override val reportSetupBtn: String = "Save & Generate Report"
+    override val reportSetupHeightLabel: String = "Height (cm)"
+    override val reportSetupWeightLabel: String = "Initial Weight (kg)"
     // Monthly Calendar Strings
-    calendarViewFullMonth = "View Full Month",
-    calendarHideMonth = "Hide Full Month",
-    calendarDaysWithWorkout = "Days with planned workouts",
-    calendarSelectedDay = "Selected day",
-    calendarTodayBadge = "Today"
-)
+    override val calendarViewFullMonth: String = "View Full Month"
+    override val calendarHideMonth: String = "Hide Full Month"
+    override val calendarDaysWithWorkout: String = "Days with planned workouts"
+    override val calendarSelectedDay: String = "Selected day"
+    override val calendarTodayBadge: String = "Today"
+}
+
+val EnglishStrings: AppStrings = EnglishStringsImpl()
 
 val LocalAppStrings = compositionLocalOf { PersianStrings }
 

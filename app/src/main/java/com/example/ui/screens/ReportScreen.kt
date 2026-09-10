@@ -432,17 +432,31 @@ private fun BodyStatsSetupCard(
                     )
                 }
 
-                Text(
-                    text = "${formatDigits(heightVal.toInt(), language)} cm",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.sp
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    color = MaterialTheme.colorScheme.onSurface,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(horizontal = 4.dp)
-                )
+                ) {
+                    Text(
+                        text = formatDigits(heightVal.toInt(), language),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = strings.unitCm,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -502,17 +516,31 @@ private fun BodyStatsSetupCard(
                     )
                 }
 
-                Text(
-                    text = "${formatDigits(String.format(Locale.US, "%.1f", weightVal), language)} kg",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.sp
-                    ),
-                    maxLines = 1,
-                    softWrap = false,
-                    color = MaterialTheme.colorScheme.onSurface,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.padding(horizontal = 4.dp)
-                )
+                ) {
+                    Text(
+                        text = formatDigits(String.format(Locale.US, "%.1f", weightVal), language),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = strings.unitKg,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        maxLines = 1,
+                        softWrap = false
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -612,7 +640,6 @@ private fun SummaryMetricCard(
             text = value,
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.SansSerif,
                 fontSize = 18.sp,
                 letterSpacing = 0.sp
             ),
@@ -666,8 +693,7 @@ private fun HistoryStreakCard(
             Text(
                 text = strings.reportHistoryStreak,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Bold
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -810,8 +836,7 @@ private fun WeightTrackerCard(
             Text(
                 text = strings.reportWeightHeader,
                 style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Black
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -866,7 +891,6 @@ private fun WeightTrackerCard(
                         text = formatDigits(String.format(Locale.US, "%.1f", currentWeight), language),
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.SansSerif,
                             fontSize = 32.sp,
                             letterSpacing = 0.sp
                         ),
@@ -1310,7 +1334,6 @@ private fun BmiCard(
                 text = formatDigits(String.format(Locale.US, "%.1f", bmi), language),
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.Black,
-                    fontFamily = FontFamily.SansSerif,
                     fontSize = 34.sp,
                     letterSpacing = 0.sp
                 ),
@@ -1382,10 +1405,10 @@ private fun BmiCard(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "${formatDigits(heightCm.toInt(), language)} cm",
+                    text = formatDigits(heightCm.toInt(), language),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 0.sp
@@ -1394,6 +1417,16 @@ private fun BmiCard(
                     softWrap = false,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                Text(
+                    text = strings.unitCm,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    maxLines = 1,
+                    softWrap = false
+                )
+                Spacer(modifier = Modifier.width(2.dp))
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = strings.reportEditStatsTitle,
@@ -1599,7 +1632,7 @@ private fun EditBodyStatsDialog(
                                 .weight(1f)
                                 .testTag("input_edit_height"),
                             singleLine = true,
-                            suffix = { Text("cm") }
+                            suffix = { Text(strings.unitCm) }
                         )
 
                         Box(
@@ -1771,7 +1804,7 @@ private fun LogWeightDialog(
                             .weight(1f)
                             .testTag("input_weight_val"),
                         singleLine = true,
-                        suffix = { Text(if (weightUnit == WeightUnit.KG) "kg" else "lbs") }
+                        suffix = { Text(WeightUnit.getUnitLabel(weightUnit, language == AppLanguage.PERSIAN)) }
                     )
 
                     IconButton(
@@ -1839,7 +1872,7 @@ private fun EditHeightDialog(
                         .fillMaxWidth()
                         .testTag("input_height_val"),
                     singleLine = true,
-                    suffix = { Text("cm") }
+                    suffix = { Text(strings.unitCm) }
                 )
             }
         },

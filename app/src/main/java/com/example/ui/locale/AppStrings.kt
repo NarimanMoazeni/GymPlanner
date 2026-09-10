@@ -10,14 +10,14 @@ enum class AppLanguage(val code: String, val title: String) {
 
 open class AppStrings {
 
-    open val appName: String = "فیت پلن"
+    open val appName: String = "جیم‌پلنر"
     // Nav
     open val navHome: String = "خانه"
     open val navPlanner: String = "برنامه"
     open val navReport: String = "گزارش"
     open val navSettings: String = "تنظیمات"
     // Onboarding
-    open val welcomeTitle: String = "به Fit Plan خوش آمدی"
+    open val welcomeTitle: String = "به جیم‌پلنر خوش آمدی"
     open val welcomeSubtitle: String = "برنامه‌ریز هفتگی تمرینات بدون نیاز به اینترنت و حساب کاربری"
     open val nameQuestion: String = "اسمت چیه؟"
     open val requiredTag: String = "ضروری"
@@ -284,12 +284,12 @@ val PersianStrings: AppStrings = AppStrings()
 
 private class EnglishStringsImpl : AppStrings() {
 
-    override val appName: String = "Fit Plan"
+    override val appName: String = "GymPlanner"
     override val navHome: String = "Home"
     override val navPlanner: String = "Planner"
     override val navReport: String = "Report"
     override val navSettings: String = "Settings"
-    override val welcomeTitle: String = "Welcome to Fit Plan"
+    override val welcomeTitle: String = "Welcome to GymPlanner"
     override val welcomeSubtitle: String = "Weekly workout planner without internet or accounts needed"
     override val nameQuestion: String = "What is your name?"
     override val requiredTag: String = "Required"

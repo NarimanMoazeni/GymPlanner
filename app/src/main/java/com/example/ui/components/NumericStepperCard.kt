@@ -153,6 +153,16 @@ fun NumericStepperCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
+                        Text(
+                            text = formatDigits(displayStr, language),
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 0.sp
+                            ),
+                            maxLines = 1,
+                            softWrap = false,
+                            color = resolvedAccent
+                        )
                         if (unitSuffix.isNotBlank()) {
                             Text(
                                 text = unitSuffix,
@@ -160,17 +170,6 @@ fun NumericStepperCard(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Text(
-                            text = formatDigits(displayStr, language),
-                            style = MaterialTheme.typography.headlineSmall.copy(
-                                fontWeight = FontWeight.Black,
-                                fontFamily = FontFamily.Monospace,
-                                letterSpacing = 0.sp
-                            ),
-                            maxLines = 1,
-                            softWrap = false,
-                            color = resolvedAccent
-                        )
                     }
                 }
 

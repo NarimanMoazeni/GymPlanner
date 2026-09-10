@@ -1761,6 +1761,7 @@ private fun LogWeightDialog(
     onConfirm: (Float) -> Unit
 ) {
     val strings = LocalAppStrings.current
+    val language = LocalCurrentLanguage.current
     var weightText by remember { mutableStateOf(String.format(Locale.US, "%.1f", initialWeight)) }
     var currentVal by remember { mutableFloatStateOf(initialWeight) }
 

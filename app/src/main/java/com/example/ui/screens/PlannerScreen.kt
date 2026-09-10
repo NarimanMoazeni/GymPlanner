@@ -150,7 +150,7 @@ fun PlannerScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = strings.plannerCopyPlan,
+                        contentDescription = strings.copyPlanToDay,
                         tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(20.dp)
                     )
@@ -164,9 +164,7 @@ fun PlannerScreen(
                 selectedDayIndex = selectedDayIndex,
                 todayWeekIndex = todayWeekIndex,
                 workoutDays = workoutDays,
-                activitiesMap = activitiesMap,
-                onSelectDay = onSelectDay,
-                onToggleTrainingDay = onToggleTrainingDay
+                onSelectDay = onSelectDay
             )
         }
 
@@ -197,7 +195,7 @@ fun PlannerScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (isTrainingDay) Icons.Default.FitnessCenter else Icons.Default.Weekend,
+                                imageVector = if (isTrainingDay) Icons.Default.FitnessCenter else Icons.Default.NightlightRound,
                                 contentDescription = null,
                                 tint = accentColor,
                                 modifier = Modifier.size(20.dp)

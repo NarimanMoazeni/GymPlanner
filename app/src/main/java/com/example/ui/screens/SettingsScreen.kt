@@ -417,8 +417,8 @@ fun SettingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         listOf(
-                            Pair(WeightUnit.KG, strings.unitKg),
-                            Pair(WeightUnit.LBS, strings.unitLbs)
+                            Pair(WeightUnit.KG, strings.unitKgOption),
+                            Pair(WeightUnit.LBS, strings.unitLbsOption)
                         ).forEach { pair ->
                             val unit = pair.first
                             val label = pair.second

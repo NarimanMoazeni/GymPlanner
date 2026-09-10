@@ -160,7 +160,6 @@ fun ActiveWorkoutScreen(
                     text = strings.activeWorkoutTitle,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif,
                         letterSpacing = 0.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface

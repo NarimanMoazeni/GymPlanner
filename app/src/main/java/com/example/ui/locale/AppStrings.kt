@@ -268,6 +268,10 @@ open class AppStrings {
     open val reportSetupBtn: String = "ثبت و محاسبه گزارش"
     open val reportSetupHeightLabel: String = "قد (سانتی‌متر)"
     open val reportSetupWeightLabel: String = "وزن اولیه (کیلوگرم)"
+    // Units
+    open val unitCm: String = "سانتی‌متر"
+    open val unitKg: String = "کیلوگرم"
+    open val unitLbs: String = "پوند"
     // Monthly Calendar Strings
     open val calendarViewFullMonth: String = "نمایش تقویم ماه"
     open val calendarHideMonth: String = "بستن تقویم ماه"
@@ -530,6 +534,10 @@ private class EnglishStringsImpl : AppStrings() {
     override val reportSetupBtn: String = "Save & Generate Report"
     override val reportSetupHeightLabel: String = "Height (cm)"
     override val reportSetupWeightLabel: String = "Initial Weight (kg)"
+    // Units
+    override val unitCm: String = "cm"
+    override val unitKg: String = "kg"
+    override val unitLbs: String = "lbs"
     // Monthly Calendar Strings
     override val calendarViewFullMonth: String = "View Full Month"
     override val calendarHideMonth: String = "Hide Full Month"

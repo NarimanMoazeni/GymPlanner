@@ -123,7 +123,6 @@ fun SettingsScreen(
                     text = strings.settingsTitle,
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif,
                         letterSpacing = 0.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
@@ -179,8 +178,7 @@ fun SettingsScreen(
                                 Text(
                                     text = profile.name.take(1).ifEmpty { "U" },
                                     style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.SansSerif
+                                        fontWeight = FontWeight.Black
                                     ),
                                     color = accentColor
                                 )
@@ -191,8 +189,7 @@ fun SettingsScreen(
                             Text(
                                 text = profile.name,
                                 style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.SansSerif
+                                    fontWeight = FontWeight.Black
                                 ),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -307,8 +304,7 @@ fun SettingsScreen(
                                     Text(
                                         text = label,
                                         style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                            fontFamily = FontFamily.SansSerif
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
                                         ),
                                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1
@@ -394,8 +390,7 @@ fun SettingsScreen(
                                     Text(
                                         text = label,
                                         style = MaterialTheme.typography.labelMedium.copy(
-                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                            fontFamily = FontFamily.SansSerif
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
                                         ),
                                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -466,8 +461,7 @@ fun SettingsScreen(
                                     Text(
                                         text = label,
                                         style = MaterialTheme.typography.labelMedium.copy(
-                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                                            fontFamily = FontFamily.SansSerif
+                                            fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium
                                         ),
                                         color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -526,8 +520,7 @@ fun SettingsScreen(
                         Text(
                             text = strings.backupExportBtn,
                             style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif
+                                fontWeight = FontWeight.Bold
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -561,8 +554,7 @@ fun SettingsScreen(
                         Text(
                             text = strings.backupImportBtn,
                             style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif
+                                fontWeight = FontWeight.Bold
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -601,8 +593,7 @@ fun SettingsScreen(
                         Text(
                             text = strings.offlineTrustBadge,
                             style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif
+                                fontWeight = FontWeight.Bold
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )

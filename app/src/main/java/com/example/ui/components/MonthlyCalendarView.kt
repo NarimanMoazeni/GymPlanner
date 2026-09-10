@@ -87,8 +87,7 @@ fun MonthlyCalendarExpansion(
             Text(
                 text = strings.homeWeeklySectionTitle,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Bold
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -265,8 +264,7 @@ fun MonthlyCalendarGrid(
                 Text(
                     text = monthTitle,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.SansSerif
+                        fontWeight = FontWeight.Bold
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )

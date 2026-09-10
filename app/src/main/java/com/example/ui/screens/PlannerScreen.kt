@@ -123,8 +123,7 @@ fun PlannerScreen(
                     Text(
                         text = strings.plannerTitle,
                         style = MaterialTheme.typography.headlineMedium.copy(
-                            fontWeight = FontWeight.Black,
-                            fontFamily = FontFamily.SansSerif
+                            fontWeight = FontWeight.Black
                         ),
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -135,58 +134,52 @@ fun PlannerScreen(
                     )
                 }
 
+                // Copy Plan Button
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(12.dp))
                         .tactileButton(
                             onClick = { onCopyPlan(selectedDayIndex) },
                             shape = RoundedCornerShape(12.dp),
                             baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                             lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                        ),
+                        )
+                        .testTag("btn_copy_plan"),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
-                        contentDescription = strings.copyPlanToDay,
-                        tint = accentColor,
+                        contentDescription = strings.plannerCopyPlan,
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(20.dp)
                     )
                 }
             }
         }
 
-        // Full Month Calendar Expansion (View Full Month action button & grid)
-        item {
-            MonthlyCalendarExpansion(
-                selectedDayIndex = selectedDayIndex,
-                todayWeekIndex = todayWeekIndex,
-                workoutDays = workoutDays,
-                activitiesMap = activitiesMap,
-                onSelectDay = onSelectDay
-            )
-        }
-
-        // 7-Day Horizontal Bar
+        // Section A: 7-Day Week Navigation Bar
         item {
             WeeklyDayBar(
                 selectedDayIndex = selectedDayIndex,
                 todayWeekIndex = todayWeekIndex,
                 workoutDays = workoutDays,
-                onSelectDay = onSelectDay
+                activitiesMap = activitiesMap,
+                onSelectDay = onSelectDay,
+                onToggleTrainingDay = onToggleTrainingDay
             )
         }
 
-        // Selected Day Status Bento Card: clearly separates toggle switch from workout title
+        // Section B: Selected Day Training Status Card (Tactile Container)
         item {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .tactileCard(shape = RoundedCornerShape(20.dp), elevation = 4.dp)
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Top section: Day icon, Name, Status Badge, and Switch Toggle
+                // Header row: Day Name + Training Status Toggle
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -194,21 +187,20 @@ fun PlannerScreen(
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(if (isTrainingDay) accentColor.copy(alpha = if (isDark) 0.22f else 0.14f) else MaterialTheme.colorScheme.surfaceContainerLowest)
-                                .border(1.dp, if (isTrainingDay) accentColor.copy(alpha = 0.35f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(14.dp)),
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(accentColor.copy(alpha = if (isDark) 0.2f else 0.12f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (isTrainingDay) Icons.Default.FitnessCenter else Icons.Default.NightlightRound,
+                                imageVector = if (isTrainingDay) Icons.Default.FitnessCenter else Icons.Default.Weekend,
                                 contentDescription = null,
-                                tint = if (isTrainingDay) accentColor else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(22.dp)
+                                tint = accentColor,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
 
@@ -216,8 +208,7 @@ fun PlannerScreen(
                             Text(
                                 text = dayName,
                                 style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Black,
-                                    fontFamily = FontFamily.SansSerif
+                                    fontWeight = FontWeight.Black
                                 ),
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -327,8 +318,7 @@ fun PlannerScreen(
                     Text(
                         text = strings.emptyPlanMessage,
                         style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.ExtraBold,
-                            fontFamily = FontFamily.SansSerif
+                            fontWeight = FontWeight.ExtraBold
                         ),
                         color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
@@ -363,8 +353,7 @@ fun PlannerScreen(
                             Text(
                                 text = strings.addActivityBtn,
                                 style = MaterialTheme.typography.labelLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.SansSerif
+                                    fontWeight = FontWeight.Bold
                                 ),
                                 color = Color.White
                             )
@@ -412,8 +401,7 @@ fun PlannerScreen(
                         Text(
                             text = strings.addActivityBtn,
                             style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif
+                                fontWeight = FontWeight.Bold
                             ),
                             color = accentColor
                         )

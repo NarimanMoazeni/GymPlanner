@@ -164,8 +164,7 @@ fun HomeScreen(
                         Text(
                             text = String.format(strings.homeGreetingFormat, profile.name),
                             style = MaterialTheme.typography.titleLarge.copy(
-                                fontWeight = FontWeight.Black,
-                                fontFamily = FontFamily.SansSerif
+                                fontWeight = FontWeight.Black
                             ),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -394,8 +393,7 @@ private fun TodayTrainingHeroCard(
                 Text(
                     text = focusName,
                     style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif
+                        fontWeight = FontWeight.Black
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -508,8 +506,7 @@ private fun TodayTrainingHeroCard(
                 Text(
                     text = if (completedActivities > 0) strings.homeContinueWorkout else strings.heroStartCta,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.SansSerif
+                        fontWeight = FontWeight.Bold
                     ),
                     color = Color.White
                 )
@@ -542,8 +539,7 @@ private fun RestDayHeroCard(
                 Text(
                     text = strings.homeRestHeroTitle,
                     style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.SansSerif
+                        fontWeight = FontWeight.Black
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -574,6 +570,7 @@ private fun RestDayHeroCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
+                .clip(RoundedCornerShape(14.dp))
                 .tactileButton(
                     onClick = onGoToPlanner,
                     shape = RoundedCornerShape(14.dp),
@@ -585,8 +582,7 @@ private fun RestDayHeroCard(
             Text(
                 text = strings.homeCheckOtherDays,
                 style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Bold
                 ),
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -648,8 +644,7 @@ private fun TodayActivityRow(
             Text(
                 text = activity.name,
                 style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily.SansSerif
+                    fontWeight = FontWeight.Bold
                 ),
                 color = if (isDone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
             )
@@ -717,8 +712,7 @@ private fun WeeklySummaryCard(
                 Text(
                     text = strings.weeklyGoalTitle,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.ExtraBold,
-                        fontFamily = FontFamily.SansSerif
+                        fontWeight = FontWeight.ExtraBold
                     ),
                     color = MaterialTheme.colorScheme.onSurface
                 )

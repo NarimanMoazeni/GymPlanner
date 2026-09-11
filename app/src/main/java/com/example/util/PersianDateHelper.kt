@@ -90,6 +90,55 @@ object PersianDateHelper {
         return Triple(jy, jm + 1, jd)
     }
 
+    /**
+     * Convert Solar Hijri (Persian) Date (year, month 1..12, day 1..31) to Gregorian Date (year, month 1..12, day 1..31)
+     */
+    fun persianToGregorian(jYear: Int, jMonth: Int, jDay: Int): Triple<Int, Int, Int> {
+        val gDaysInMonth = intArrayOf(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+        val jDaysInMonth = intArrayOf(31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29)
+        val jy = jYear - 979
+        val jm = jMonth - 1
+        val jd = jDay - 1
+        var jDayNo = 365 * jy + (jy / 33) * 8 + ((jy % 33 + 3) / 4)
+        for (i in 0 until jm) {
+            jDayNo += jDaysInMonth[i]
+        }
+        jDayNo += jd
+        var gDayNo = jDayNo + 79
+        var gy = 1600 + 400 * (gDayNo / 146097)
+        gDayNo %= 146097
+        if (gDayNo >= 36525) {
+            gDayNo--
+            gy += 100 * (gDayNo / 36524)
+            gDayNo %= 36524
+            if (gDayNo >= 365) {
+                gDayNo++
+            }
+        }
+        gy += 4 * (gDayNo / 1461)
+        gDayNo %= 1461
+        if (gDayNo >= 366) {
+            gDayNo--
+            gy += gDayNo / 365
+            gDayNo %= 365
+        }
+        var i = 0
+        while (i < 12) {
+            var mDays = gDaysInMonth[i]
+            if (i == 1 && ((gy % 4 == 0 && gy % 100 != 0) || (gy % 400 == 0))) {
+                mDays = 29
+            }
+            if (gDayNo < mDays) {
+                break
+            }
+            gDayNo -= mDays
+            i++
+        }
+        val gm = i + 1
+        val gd = gDayNo + 1
+        return Triple(gy, gm, gd)
+    }
+
     fun getDayOfWeekName(weekIndex: Int, language: AppLanguage): String {
         val idx = (weekIndex - 1).coerceIn(0, 6)
         return if (language == AppLanguage.PERSIAN) PERSIAN_DAY_NAMES[idx] else ENGLISH_DAY_NAMES[idx]

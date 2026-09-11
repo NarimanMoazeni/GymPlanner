@@ -1205,12 +1205,15 @@ private fun CustomWeightLineChart(
             ) {
                 val displayLabels = when {
                     weightPoints.isEmpty() -> emptyList()
-                    weightPoints.size == 1 -> listOf(weightPoints.first().label)
-                    weightPoints.size == 2 -> listOf(weightPoints.first().label, weightPoints.last().label)
+                    weightPoints.size == 1 -> listOf(formatWeightPointDateLabel(weightPoints.first().dateKey, language, isSingle = true))
+                    weightPoints.size == 2 -> listOf(
+                        formatWeightPointDateLabel(weightPoints.first().dateKey, language, isSingle = false),
+                        formatWeightPointDateLabel(weightPoints.last().dateKey, language, isSingle = false)
+                    )
                     else -> listOf(
-                        weightPoints.first().label,
-                        weightPoints[weightPoints.size / 2].label,
-                        weightPoints.last().label
+                        formatWeightPointDateLabel(weightPoints.first().dateKey, language, isSingle = false),
+                        formatWeightPointDateLabel(weightPoints[weightPoints.size / 2].dateKey, language, isSingle = false),
+                        formatWeightPointDateLabel(weightPoints.last().dateKey, language, isSingle = false)
                     )
                 }
 
@@ -1605,13 +1608,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                                .clickable {
-                                    if (heightVal > 100f) {
-                                        heightVal -= 1f
-                                        heightText = heightVal.toInt().toString()
-                                    }
+                            .clickable {
+                                if (heightVal > 100f) {
+                                    heightVal -= 1f
+                                    heightText = heightVal.toInt().toString()
                                 }
-                                .testTag("btn_edit_height_minus"),
+                            }
+                            .testTag("btn_edit_height_minus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1640,13 +1643,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                                .clickable {
-                                    if (heightVal < 250f) {
-                                        heightVal += 1f
-                                        heightText = heightVal.toInt().toString()
-                                    }
+                            .clickable {
+                                if (heightVal < 250f) {
+                                    heightVal += 1f
+                                    heightText = heightVal.toInt().toString()
                                 }
-                                .testTag("btn_edit_height_plus"),
+                            }
+                            .testTag("btn_edit_height_plus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1676,13 +1679,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                                .clickable {
-                                    if (weightVal > 30f) {
-                                        weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
-                                        weightText = String.format(Locale.US, "%.1f", weightVal)
-                                    }
+                            .clickable {
+                                if (weightVal > 30f) {
+                                    weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
+                                    weightText = String.format(Locale.US, "%.1f", weightVal)
                                 }
-                                .testTag("btn_edit_weight_minus"),
+                            }
+                            .testTag("btn_edit_weight_minus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1711,13 +1714,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                                .clickable {
-                                    if (weightVal < 250f) {
-                                        weightVal = (weightVal + 0.5f).coerceAtMost(250f)
-                                        weightText = String.format(Locale.US, "%.1f", weightVal)
-                                    }
+                            .clickable {
+                                if (weightVal < 250f) {
+                                    weightVal = (weightVal + 0.5f).coerceAtMost(250f)
+                                    weightText = String.format(Locale.US, "%.1f", weightVal)
                                 }
-                                .testTag("btn_edit_weight_plus"),
+                            }
+                            .testTag("btn_edit_weight_plus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1901,15 +1904,58 @@ private fun EditHeightDialog(
 
 private fun formatMonthLabel(dateKey: String, language: AppLanguage): String {
     val parts = dateKey.split("-")
-    if (parts.size >= 2) {
-        val m = parts[1].toIntOrNull() ?: 1
+    if (parts.size >= 3) {
+        val gy = parts[0].toIntOrNull() ?: 2026
+        val gm = parts[1].toIntOrNull() ?: 1
+        val gd = parts[2].toIntOrNull() ?: 1
         return if (language == AppLanguage.PERSIAN) {
-            val pNames = listOf("فرو", "ارد", "خرد", "تیر", "مرد", "شهر", "مهر", "آبا", "آذر", "دی", "بهم", "اسف")
-            pNames.getOrElse(m - 1) { "" }
+            val (_, pMonth, _) = com.example.util.PersianDateHelper.gregorianToPersian(gy, gm, gd)
+            val pNames = listOf("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
+            pNames.getOrElse(pMonth - 1) { "" }
         } else {
             val eNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-            eNames.getOrElse(m - 1) { "" }
+            eNames.getOrElse(gm - 1) { "" }
+        }
+    } else if (parts.size == 2) {
+        val gy = 2026
+        val gm = parts[0].toIntOrNull() ?: 1
+        val gd = parts[1].toIntOrNull() ?: 1
+        return if (language == AppLanguage.PERSIAN) {
+            val (_, pMonth, _) = com.example.util.PersianDateHelper.gregorianToPersian(gy, gm, gd)
+            val pNames = listOf("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
+            pNames.getOrElse(pMonth - 1) { "" }
+        } else {
+            val eNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            eNames.getOrElse(gm - 1) { "" }
         }
     }
     return ""
+}
+
+private fun formatWeightPointDateLabel(dateKey: String, language: AppLanguage, isSingle: Boolean): String {
+    val parts = dateKey.split("-")
+    if (parts.size >= 3) {
+        val gy = parts[0].toIntOrNull() ?: 2026
+        val gm = parts[1].toIntOrNull() ?: 1
+        val gd = parts[2].toIntOrNull() ?: 1
+        return if (language == AppLanguage.PERSIAN) {
+            val (_, pMonth, pDay) = com.example.util.PersianDateHelper.gregorianToPersian(gy, gm, gd)
+            val pNames = listOf("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
+            val mName = pNames.getOrElse(pMonth - 1) { "" }
+            if (isSingle) {
+                mName
+            } else {
+                "${formatDigits(pDay, language)} $mName"
+            }
+        } else {
+            val eNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            val mName = eNames.getOrElse(gm - 1) { "" }
+            if (isSingle) {
+                mName
+            } else {
+                "$mName $gd"
+            }
+        }
+    }
+    return formatMonthLabel(dateKey, language)
 }

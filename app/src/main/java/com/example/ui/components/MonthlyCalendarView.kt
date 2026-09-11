@@ -70,10 +70,15 @@ fun MonthlyCalendarExpansion(
     workoutDays: List<WorkoutDayEntity>,
     activitiesMap: Map<Int, List<ActivityEntity>>,
     onSelectDay: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    isExpanded: Boolean? = null,
+    onToggleExpanded: (() -> Unit)? = null
 ) {
     val strings = LocalAppStrings.current
-    var isExpanded by remember { mutableStateOf(false) }
+    var internalExpanded by remember { mutableStateOf(false) }
+    val expanded = isExpanded ?: internalExpanded
+    val toggle = onToggleExpanded ?: { internalExpanded = !internalExpanded }
 
     Column(modifier = modifier.fillMaxWidth()) {
         // Toggle Action Button above the 7-day bar
@@ -85,7 +90,7 @@ fun MonthlyCalendarExpansion(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = strings.homeWeeklySectionTitle,
+                text = title ?: strings.homeWeeklySectionTitle,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -94,17 +99,16 @@ fun MonthlyCalendarExpansion(
 
             // Tactile Action Chip
             val interactionSource = remember { MutableInteractionSource() }
-            val isPressed by interactionSource.collectIsPressedAsState()
             val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(12.dp))
                     .clickable(interactionSource = interactionSource, indication = null) {
-                        isExpanded = !isExpanded
+                        toggle()
                     }
                     .background(
-                        if (isExpanded) {
+                        if (expanded) {
                             if (isDark) ElectricIndigo.copy(alpha = 0.25f) else ElectricIndigo.copy(alpha = 0.12f)
                         } else {
                             if (isDark) Color(0xFF1E2130) else Color(0xFFEDEEF6)
@@ -112,7 +116,7 @@ fun MonthlyCalendarExpansion(
                     )
                     .border(
                         width = 1.dp,
-                        color = if (isExpanded) ElectricIndigo else Color.Transparent,
+                        color = if (expanded) ElectricIndigo else Color.Transparent,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 10.dp, vertical = 6.dp)
@@ -124,19 +128,24 @@ fun MonthlyCalendarExpansion(
                     imageVector = Icons.Default.CalendarMonth,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = if (isExpanded) ElectricIndigo else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = if (expanded) ElectricIndigo else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = if (isExpanded) strings.calendarHideMonth else strings.calendarViewFullMonth,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = if (isExpanded) ElectricIndigo else MaterialTheme.colorScheme.onSurface
+                    text = if (expanded) strings.calendarHideMonth else strings.calendarViewFullMonth,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.sp
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    color = if (expanded) ElectricIndigo else MaterialTheme.colorScheme.onSurface
                 )
             }
         }
 
         // Full Month Expandable Grid
         AnimatedVisibility(
-            visible = isExpanded,
+            visible = expanded,
             enter = expandVertically() + fadeIn(),
             exit = shrinkVertically() + fadeOut()
         ) {
@@ -177,56 +186,90 @@ fun MonthlyCalendarGrid(
     // Navigation state: current calendar month offset
     var monthOffset by remember { mutableIntStateOf(0) }
 
-    // Calculate year and month based on offset
+    val todayCal = remember { Calendar.getInstance() }
+    val (todayPYear, todayPMonth, todayPDay) = remember {
+        PersianDateHelper.gregorianToPersian(
+            todayCal.get(Calendar.YEAR),
+            todayCal.get(Calendar.MONTH) + 1,
+            todayCal.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
+    // Gregorian displayCal for English mode
     val displayCal = remember(monthOffset) {
         Calendar.getInstance().apply {
             add(Calendar.MONTH, monthOffset)
         }
     }
-
     val currentYear = displayCal.get(Calendar.YEAR)
-    val currentMonth = displayCal.get(Calendar.MONTH) + 1 // 1..12
-    val daysInMonth = displayCal.getActualMaximum(Calendar.DAY_OF_MONTH)
+    val currentMonth = displayCal.get(Calendar.MONTH) + 1
 
-    // First day of this month
-    val firstDayCal = remember(monthOffset) {
-        Calendar.getInstance().apply {
+    // Persian year & month calculation with offset
+    val (displayPYear, displayPMonth) = remember(monthOffset, todayPYear, todayPMonth) {
+        val totalMonths = (todayPYear * 12 + (todayPMonth - 1)) + monthOffset
+        val yr = totalMonths / 12
+        val mo = (totalMonths % 12) + 1
+        yr to mo
+    }
+
+    // Days in current display month
+    val daysInMonth = if (language == AppLanguage.PERSIAN) {
+        when {
+            displayPMonth in 1..6 -> 31
+            displayPMonth in 7..11 -> 30
+            else -> if ((displayPYear % 33) in listOf(1, 5, 9, 13, 17, 22, 26, 30)) 30 else 29
+        }
+    } else {
+        displayCal.getActualMaximum(Calendar.DAY_OF_MONTH)
+    }
+
+    // Day of week index for day 1 (1=Sat..7=Fri)
+    val firstDayWeekIndex = if (language == AppLanguage.PERSIAN) {
+        val (gy, gm, gd) = PersianDateHelper.persianToGregorian(displayPYear, displayPMonth, 1)
+        val c = Calendar.getInstance().apply { set(gy, gm - 1, gd) }
+        PersianDateHelper.calendarDayToWeekIndex(c.get(Calendar.DAY_OF_WEEK))
+    } else {
+        val firstDayCal = Calendar.getInstance().apply {
             timeInMillis = displayCal.timeInMillis
             set(Calendar.DAY_OF_MONTH, 1)
         }
+        PersianDateHelper.calendarDayToWeekIndex(firstDayCal.get(Calendar.DAY_OF_WEEK))
     }
-    // Day of week index for day 1 (1=Sat..7=Fri)
-    val firstDayWeekIndex = PersianDateHelper.calendarDayToWeekIndex(firstDayCal.get(Calendar.DAY_OF_WEEK))
-    // Leading empty cells before the 1st
+
     val leadingEmptyCells = firstDayWeekIndex - 1
 
     // Today info
-    val todayCal = Calendar.getInstance()
-    val isCurrentDisplayMonth = todayCal.get(Calendar.YEAR) == currentYear &&
-            (todayCal.get(Calendar.MONTH) + 1) == currentMonth
-    val todayDayOfMonth = if (isCurrentDisplayMonth) todayCal.get(Calendar.DAY_OF_MONTH) else -1
+    val isCurrentDisplayMonth = if (language == AppLanguage.PERSIAN) {
+        monthOffset == 0
+    } else {
+        todayCal.get(Calendar.YEAR) == currentYear && (todayCal.get(Calendar.MONTH) + 1) == currentMonth
+    }
+    val todayDayOfMonth = if (language == AppLanguage.PERSIAN) {
+        if (isCurrentDisplayMonth) todayPDay else -1
+    } else {
+        if (isCurrentDisplayMonth) todayCal.get(Calendar.DAY_OF_MONTH) else -1
+    }
 
     // Selected day of month within this calendar view
     var selectedCalendarDay by remember {
-        mutableIntStateOf(
-            if (isCurrentDisplayMonth) todayDayOfMonth else 1
-        )
+        mutableIntStateOf(if (isCurrentDisplayMonth) todayDayOfMonth else 1)
     }
 
-    // Title text: e.g. "2026/09"
-    val monthTitle = remember(currentYear, currentMonth, language) {
-        val yStr = formatDigits(currentYear, language)
-        val mStr = formatDigits(String.format("%02d", currentMonth), language)
+    // Month Title text: e.g. "شهریور ۱۴۰۵" or "September 2026"
+    val monthTitle = remember(monthOffset, displayPYear, displayPMonth, currentYear, currentMonth, language) {
         if (language == AppLanguage.PERSIAN) {
-            val (pYear, pMonth, _) = PersianDateHelper.gregorianToPersian(currentYear, currentMonth, 15)
             val pMonthNames = listOf(
                 "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
                 "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
             )
-            val mName = pMonthNames.getOrElse(pMonth - 1) { "" }
-            "$mName ${formatDigits(pYear, language)} ($yStr/$mStr)"
+            val mName = pMonthNames.getOrElse(displayPMonth - 1) { "" }
+            "$mName ${formatDigits(displayPYear, language)}"
         } else {
-            "$yStr/$mStr"
+            val eMonthNames = listOf(
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            )
+            "${eMonthNames.getOrElse(currentMonth - 1) { "" }} $currentYear"
         }
     }
 
@@ -346,11 +389,15 @@ fun MonthlyCalendarGrid(
 
                         if (dayNumber in 1..daysInMonth) {
                             // Calculate day of week index (1=Sat..7=Fri)
-                            val dayCal = Calendar.getInstance().apply {
-                                timeInMillis = displayCal.timeInMillis
-                                set(Calendar.DAY_OF_MONTH, dayNumber)
+                            val dayOfWeek = if (language == AppLanguage.PERSIAN) {
+                                ((firstDayWeekIndex - 1 + (dayNumber - 1)) % 7) + 1
+                            } else {
+                                val dayCal = Calendar.getInstance().apply {
+                                    timeInMillis = displayCal.timeInMillis
+                                    set(Calendar.DAY_OF_MONTH, dayNumber)
+                                }
+                                PersianDateHelper.calendarDayToWeekIndex(dayCal.get(Calendar.DAY_OF_WEEK))
                             }
-                            val dayOfWeek = PersianDateHelper.calendarDayToWeekIndex(dayCal.get(Calendar.DAY_OF_WEEK))
 
                             // Check if day has planned workouts
                             val dayEntity = workoutDays.find { it.dayOfWeek == dayOfWeek }

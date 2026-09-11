@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FitnessCenter
@@ -104,6 +105,7 @@ fun PlannerScreen(
 
     var showEditFocusDialog by remember { mutableStateOf(false) }
     var editingFocusText by remember { mutableStateOf("") }
+    var isCalendarExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier
@@ -113,7 +115,7 @@ fun PlannerScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         item {
-            // Header: Title, Subtitle & Copy Plan Button
+            // Header: Title, Subtitle & Action Buttons (Calendar Toggle + Copy Plan)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -134,38 +136,89 @@ fun PlannerScreen(
                     )
                 }
 
-                // Copy Plan Button
-                Box(
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .tactileButton(
-                            onClick = { onCopyPlan(selectedDayIndex) },
-                            shape = RoundedCornerShape(12.dp),
-                            baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
-                        )
-                        .testTag("btn_copy_plan"),
-                    contentAlignment = Alignment.Center
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = strings.copyPlanToDay,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    // Quick Month Calendar Toggle Button
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .tactileButton(
+                                onClick = { isCalendarExpanded = !isCalendarExpanded },
+                                shape = RoundedCornerShape(12.dp),
+                                baseColor = if (isCalendarExpanded) {
+                                    if (isDark) ElectricIndigo.copy(alpha = 0.35f) else ElectricIndigo.copy(alpha = 0.15f)
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainerHigh
+                                },
+                                lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                            )
+                            .border(
+                                width = if (isCalendarExpanded) 1.5.dp else 0.dp,
+                                color = if (isCalendarExpanded) ElectricIndigo else Color.Transparent,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .testTag("btn_planner_month_calendar"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarMonth,
+                            contentDescription = strings.calendarViewFullMonth,
+                            tint = if (isCalendarExpanded) ElectricIndigo else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    // Copy Plan Button
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .tactileButton(
+                                onClick = { onCopyPlan(selectedDayIndex) },
+                                shape = RoundedCornerShape(12.dp),
+                                baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                            )
+                            .testTag("btn_copy_plan"),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = strings.copyPlanToDay,
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
 
-        // Section A: 7-Day Week Navigation Bar
+        // Section A: Monthly Calendar Expansion & 7-Day Week Navigation Bar
         item {
-            WeeklyDayBar(
-                selectedDayIndex = selectedDayIndex,
-                todayWeekIndex = todayWeekIndex,
-                workoutDays = workoutDays,
-                onSelectDay = onSelectDay
-            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                MonthlyCalendarExpansion(
+                    selectedDayIndex = selectedDayIndex,
+                    todayWeekIndex = todayWeekIndex,
+                    workoutDays = workoutDays,
+                    activitiesMap = activitiesMap,
+                    onSelectDay = onSelectDay,
+                    isExpanded = isCalendarExpanded,
+                    onToggleExpanded = { isCalendarExpanded = !isCalendarExpanded }
+                )
+
+                WeeklyDayBar(
+                    selectedDayIndex = selectedDayIndex,
+                    todayWeekIndex = todayWeekIndex,
+                    workoutDays = workoutDays,
+                    onSelectDay = onSelectDay
+                )
+            }
         }
 
         // Section B: Selected Day Training Status Card (Tactile Container)
@@ -465,4 +518,3 @@ fun PlannerScreen(
         )
     }
 }
-

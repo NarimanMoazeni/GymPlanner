@@ -137,6 +137,9 @@ fun HomeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
@@ -160,13 +163,18 @@ fun HomeScreen(
                         )
                     }
 
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(
+                        modifier = Modifier.weight(1f, fill = false),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
                             text = String.format(strings.homeGreetingFormat, profile.name),
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Black
                             ),
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            softWrap = false
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -182,7 +190,9 @@ fun HomeScreen(
                             Text(
                                 text = if (isTodayTraining) strings.homeStatusTraining else strings.homeStatusRest,
                                 style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }
@@ -191,6 +201,7 @@ fun HomeScreen(
                 // Date Badge
                 Box(
                     modifier = Modifier
+                        .wrapContentSize()
                         .clip(RoundedCornerShape(12.dp))
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh)
                         .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
@@ -208,8 +219,13 @@ fun HomeScreen(
                         )
                         Text(
                             text = todayDateInfo.dayOfWeekName,
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.onSurface
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }

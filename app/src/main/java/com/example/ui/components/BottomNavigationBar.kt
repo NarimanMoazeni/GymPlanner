@@ -1,10 +1,13 @@
 package com.example.ui.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -152,7 +155,22 @@ private fun DockNavItem(
     }
 
     val icon = if (selected) selectedIcon else unselectedIcon
-    val contentColor = if (selected) activeAccentColor else MaterialTheme.colorScheme.onSurfaceVariant
+
+    val animatedBgColor by animateColorAsState(
+        targetValue = if (selected) activeCapsuleBg else Color.Transparent,
+        animationSpec = tween(durationMillis = 250),
+        label = "nav_bg_color"
+    )
+    val animatedContentColor by animateColorAsState(
+        targetValue = if (selected) activeAccentColor else MaterialTheme.colorScheme.onSurfaceVariant,
+        animationSpec = tween(durationMillis = 250),
+        label = "nav_content_color"
+    )
+    val animatedHorizontalPadding by animateDpAsState(
+        targetValue = if (selected) 16.dp else 12.dp,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "nav_padding"
+    )
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.92f else 1.0f,
@@ -180,15 +198,21 @@ private fun DockNavItem(
         Row(
             modifier = Modifier
                 .clip(RoundedCornerShape(20.dp))
-                .background(if (selected) activeCapsuleBg else Color.Transparent)
-                .padding(horizontal = if (selected) 16.dp else 12.dp, vertical = 8.dp),
+                .background(animatedBgColor)
+                .animateContentSize(
+                    animationSpec = spring(
+                        stiffness = Spring.StiffnessMediumLow,
+                        dampingRatio = Spring.DampingRatioLowBouncy
+                    )
+                )
+                .padding(horizontal = animatedHorizontalPadding, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = title,
-                tint = contentColor,
+                tint = animatedContentColor,
                 modifier = Modifier.size(24.dp)
             )
 
@@ -201,12 +225,14 @@ private fun DockNavItem(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = title,
-                        color = contentColor,
+                        color = animatedContentColor,
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.5.sp,
-                            letterSpacing = 0.3.sp
-                        )
+                            letterSpacing = 0.sp
+                        ),
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }

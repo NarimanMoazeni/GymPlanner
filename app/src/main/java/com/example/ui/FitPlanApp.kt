@@ -25,7 +25,10 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +43,7 @@ import com.example.ui.screens.OnboardingScreen
 import com.example.ui.screens.PlannerScreen
 import com.example.ui.screens.ReportScreen
 import com.example.ui.screens.SettingsScreen
+import com.example.ui.screens.SplashScreen
 import com.example.ui.theme.FitPlanTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,6 +53,7 @@ fun FitPlanApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    var isColdStartSplashDone by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(uiState.feedbackMessage) {
         uiState.feedbackMessage?.let { msg ->
@@ -57,33 +62,48 @@ fun FitPlanApp(
         }
     }
 
-    // Handle back button behavior
-    BackHandler(enabled = uiState.currentScreen != AppScreen.HOME && uiState.currentScreen != AppScreen.ONBOARDING) {
+    // Handle back button behavior (only active when splash is done)
+    BackHandler(enabled = isColdStartSplashDone && uiState.currentScreen != AppScreen.HOME && uiState.currentScreen != AppScreen.ONBOARDING) {
         viewModel.navigateTo(AppScreen.HOME)
     }
 
     FitPlanTheme(themeMode = uiState.preferences.themeMode) {
         FitPlanLocalizationProvider(language = uiState.preferences.language) {
-            val showBottomBar = uiState.currentScreen in listOf(
-                AppScreen.HOME,
-                AppScreen.PLANNER,
-                AppScreen.REPORT,
-                AppScreen.SETTINGS
-            )
+            AnimatedContent(
+                targetState = isColdStartSplashDone,
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(300))
+                },
+                label = "splash_to_main_transition"
+            ) { splashDone ->
+                if (!splashDone) {
+                    SplashScreen(
+                        onSplashFinished = {
+                            isColdStartSplashDone = true
+                        }
+                    )
+                } else {
+                    val showBottomBar = uiState.currentScreen in listOf(
+                        AppScreen.HOME,
+                        AppScreen.PLANNER,
+                        AppScreen.REPORT,
+                        AppScreen.SETTINGS
+                    )
 
-            Scaffold(
-                modifier = Modifier.fillMaxSize(),
-                contentWindowInsets = WindowInsets.statusBars,
-                snackbarHost = { SnackbarHost(snackbarHostState) },
-                bottomBar = {
-                    if (showBottomBar) {
-                        FitPlanBottomNav(
-                            currentScreen = uiState.currentScreen,
-                            onNavigate = { viewModel.navigateTo(it) }
-                        )
-                    }
-                }
-            ) { innerPadding ->
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Scaffold(
+                            modifier = Modifier.fillMaxSize(),
+                            contentWindowInsets = WindowInsets.statusBars,
+                            snackbarHost = { SnackbarHost(snackbarHostState) },
+                            bottomBar = {
+                                if (showBottomBar) {
+                                    FitPlanBottomNav(
+                                        currentScreen = uiState.currentScreen,
+                                        onNavigate = { viewModel.navigateTo(it) }
+                                    )
+                                }
+                            }
+                        ) { innerPadding ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -106,7 +126,7 @@ fun FitPlanApp(
                                 (slideInHorizontally(
                                     animationSpec = spring(stiffness = Spring.StiffnessMediumLow, dampingRatio = Spring.DampingRatioNoBouncy),
                                     initialOffsetX = { fullWidth -> direction * fullWidth / 4 }
-                               ) + fadeIn(
+                                ) + fadeIn(
                                     animationSpec = tween(durationMillis = 250)
                                 )).togetherWith(
                                     slideOutHorizontally(
@@ -289,6 +309,9 @@ fun FitPlanApp(
                     onDismiss = { viewModel.dismissCopyPlanDialog() },
                     onConfirm = { targetDay -> viewModel.confirmCopyPlan(targetDay) }
                 )
+            }
+                    }
+                }
             }
         }
     }

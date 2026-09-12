@@ -281,6 +281,24 @@ open class AppStrings {
     // Splash
     open val splashTagline: String = "برنامه‌ریزی هوشمند تمرینات"
     open val splashLoading: String = "در حال آماده‌سازی..."
+    // Onboarding Walkthrough Tutorial
+    open val tutorialStep1Title: String = "داشبورد روزانه و وضعیت امروز"
+    open val tutorialStep1Desc: String = "در این بخش وضعیت تمرینی امروز، تعداد حرکات، ست‌ها، اهداف هفتگی و شروع سریع جلسه تمرین را در یک نگاه مشاهده کنید."
+    open val tutorialStep2Title: String = "برنامه‌ریزی هفتگی و تقویم"
+    open val tutorialStep2Desc: String = "برنامه تمرینی کل روزهای هفته را مدیریت کنید؛ برای هر روز تمرکز مشخص کنید و از تقویم پیشرفته ماهانه لذت ببرید."
+    open val tutorialStep3Title: String = "تعریف و ویرایش حرکات"
+    open val tutorialStep3Desc: String = "با دکمه شناور (+) هر حرکت تمرینی دلخواه را با ست، تکرار، وزن، تایم یا مسافت اضافه کنید و برنامه روزها را به راحتی کپی کنید."
+    open val tutorialStep4Title: String = "جلسه تمرین زنده و تایمر استراحت"
+    open val tutorialStep4Desc: String = "هنگام تمرین، حرکات را یکی پس از دیگری تیک بزنید و از تایمر خودکار و هوشمند استراحت بین ست‌ها استفاده کنید."
+    open val tutorialStep5Title: String = "نمودارها و گزارش پیشرفت"
+    open val tutorialStep5Desc: String = "روند تغییرات وزن بدن، محاسبه هوشمند شاخص BMI، کالری تخمینی و تسلسل روزهای تمرینی خود را تحلیل کنید."
+    open val tutorialNextBtn: String = "بعدی"
+    open val tutorialPrevBtn: String = "قبلی"
+    open val tutorialSkipBtn: String = "صرف‌نظر"
+    open val tutorialStartBtn: String = "شروع استفاده از برنامه"
+    open val tutorialStepCounter: String = "گام %s از %s"
+    open val tutorialSettingsItem: String = "راهنما و تور معرفی برنامه"
+    open val tutorialSettingsItemDesc: String = "مشاهده مجدد آموزش بخش‌ها و قابلیت‌های کاربردی برنامه"
 }
 
 val PersianStrings: AppStrings = AppStrings()
@@ -550,6 +568,24 @@ private class EnglishStringsImpl : AppStrings() {
     // Splash
     override val splashTagline: String = "Smart Workout Planner"
     override val splashLoading: String = "Getting ready..."
+    // Onboarding Walkthrough Tutorial
+    override val tutorialStep1Title: String = "Daily Dashboard & Today's Plan"
+    override val tutorialStep1Desc: String = "Quickly view today's workout plan, exercises count, sets, weekly goals, and start your session in one glance."
+    override val tutorialStep2Title: String = "Weekly Planner & Calendar"
+    override val tutorialStep2Desc: String = "Organize your full 7-day training schedule, designate daily focus targets, and inspect the interactive monthly calendar."
+    override val tutorialStep3Title: String = "Custom Exercises & Tracking"
+    override val tutorialStep3Desc: String = "Use the floating (+) button to add custom exercises with sets, reps, weights, duration, and clone daily plans effortlessly."
+    override val tutorialStep4Title: String = "Live Workout & Rest Timer"
+    override val tutorialStep4Desc: String = "Check off sets during active workouts and take advantage of the integrated smart rest timer between sets."
+    override val tutorialStep5Title: String = "Analytics & Body Progress"
+    override val tutorialStep5Desc: String = "Analyze your weight trend curve, calculate smart BMI, review estimated calorie burn, and maintain workout streaks."
+    override val tutorialNextBtn: String = "Next"
+    override val tutorialPrevBtn: String = "Previous"
+    override val tutorialSkipBtn: String = "Skip"
+    override val tutorialStartBtn: String = "Get Started"
+    override val tutorialStepCounter: String = "Step %s of %s"
+    override val tutorialSettingsItem: String = "App Tour & Guide"
+    override val tutorialSettingsItemDesc: String = "Replay the interactive walkthrough and feature guide"
 }
 
 val EnglishStrings: AppStrings = EnglishStringsImpl()

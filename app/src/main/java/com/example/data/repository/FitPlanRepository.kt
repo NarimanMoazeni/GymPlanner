@@ -90,6 +90,10 @@ class FitPlanRepository(
         preferencesManager.logWeightEntry(weight, dateKey)
     }
 
+    suspend fun setTutorialCompleted(completed: Boolean) {
+        preferencesManager.setTutorialCompleted(completed)
+    }
+
     suspend fun updateDayFocus(dayOfWeek: Int, focusTitle: String) {
         withContext(Dispatchers.IO) {
             val existing = dao.getWorkoutDayOnce(dayOfWeek)

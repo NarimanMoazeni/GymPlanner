@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
@@ -93,6 +94,7 @@ fun SettingsScreen(
     onExportBackup: ((String) -> Unit) -> Unit,
     onImportBackup: (String, (Boolean) -> Unit) -> Unit,
     onResetToFreshInstall: () -> Unit = {},
+    onReplayTutorial: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val strings = LocalAppStrings.current
@@ -468,6 +470,56 @@ fun SettingsScreen(
                                 }
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        // Help & Interactive Guide Card
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .tactileCard(shape = RoundedCornerShape(22.dp), elevation = 4.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FramedSectionHeader(
+                    title = strings.tutorialSettingsItem,
+                    badgeText = "آموزش"
+                )
+
+                Text(
+                    text = strings.tutorialSettingsItemDesc,
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 18.sp
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .tactileButton(
+                            onClick = onReplayTutorial,
+                            shape = RoundedCornerShape(14.dp),
+                            baseColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            lipColor = MaterialTheme.colorScheme.surfaceContainerLowest
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, tint = accentColor)
+                        Text(
+                            text = strings.tutorialSettingsItem,
+                            style = MaterialTheme.typography.labelLarge.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }

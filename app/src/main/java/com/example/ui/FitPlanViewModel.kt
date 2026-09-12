@@ -476,6 +476,18 @@ class FitPlanViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun completeTutorial() {
+        viewModelScope.launch {
+            repository.setTutorialCompleted(true)
+        }
+    }
+
+    fun restartTutorial() {
+        viewModelScope.launch {
+            repository.setTutorialCompleted(false)
+        }
+    }
+
     fun exportBackup(onResult: (String) -> Unit) {
         viewModelScope.launch {
             val json = repository.exportBackupJson()

@@ -36,6 +36,7 @@ import com.example.ui.components.AddEditActivitySheet
 import com.example.ui.components.CopyDayPlanDialog
 import com.example.ui.components.DeleteConfirmDialog
 import com.example.ui.components.FitPlanBottomNav
+import com.example.ui.components.TutorialOverlayDialog
 import com.example.ui.locale.FitPlanLocalizationProvider
 import com.example.ui.screens.ActiveWorkoutScreen
 import com.example.ui.screens.HomeScreen
@@ -270,6 +271,9 @@ fun FitPlanApp(
                                     },
                                     onImportBackup = { json, callback ->
                                         viewModel.importBackup(json, callback)
+                                    },
+                                    onReplayTutorial = {
+                                        viewModel.restartTutorial()
                                     }
                                 )
                             }
@@ -308,6 +312,14 @@ fun FitPlanApp(
                     sourceDayOfWeek = srcDay,
                     onDismiss = { viewModel.dismissCopyPlanDialog() },
                     onConfirm = { targetDay -> viewModel.confirmCopyPlan(targetDay) }
+                )
+            }
+
+            // First-Time User Onboarding Walkthrough Tutorial Dialog
+            if (isColdStartSplashDone && uiState.currentScreen != AppScreen.ONBOARDING && !uiState.preferences.isTutorialCompleted) {
+                TutorialOverlayDialog(
+                    onDismiss = { viewModel.completeTutorial() },
+                    onComplete = { viewModel.completeTutorial() }
                 )
             }
                     }

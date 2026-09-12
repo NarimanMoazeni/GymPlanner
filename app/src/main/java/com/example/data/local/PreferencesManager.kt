@@ -26,7 +26,8 @@ data class AppPreferences(
     val weeklyGoalCustomText: String = "",
     val userWeightKg: Float = 67.0f,
     val userHeightCm: Float = 187.0f,
-    val weightHistoryRaw: String = ""
+    val weightHistoryRaw: String = "",
+    val isTutorialCompleted: Boolean = false
 ) {
     val weeklyGoal: String
         get() = weeklyGoalCustomText
@@ -45,6 +46,7 @@ class PreferencesManager(private val context: Context) {
         val USER_WEIGHT = floatPreferencesKey("user_weight")
         val USER_HEIGHT = floatPreferencesKey("user_height")
         val WEIGHT_HISTORY = stringPreferencesKey("weight_history")
+        val TUTORIAL_COMPLETED = booleanPreferencesKey("tutorial_completed")
     }
 
     val preferencesFlow: Flow<AppPreferences> = context.dataStore.data.map { prefs ->
@@ -72,6 +74,7 @@ class PreferencesManager(private val context: Context) {
         val weight = prefs[Keys.USER_WEIGHT] ?: 67.0f
         val height = prefs[Keys.USER_HEIGHT] ?: 187.0f
         val history = prefs[Keys.WEIGHT_HISTORY] ?: ""
+        val tutorialCompleted = prefs[Keys.TUTORIAL_COMPLETED] ?: false
 
         AppPreferences(
             language = language,
@@ -83,7 +86,8 @@ class PreferencesManager(private val context: Context) {
             weeklyGoalCustomText = goalText,
             userWeightKg = weight,
             userHeightCm = height,
-            weightHistoryRaw = history
+            weightHistoryRaw = history,
+            isTutorialCompleted = tutorialCompleted
         )
     }
 
@@ -143,6 +147,12 @@ class PreferencesManager(private val context: Context) {
             val newEntry = "$dateKey:$weight"
             val updated = if (currentHistory.isBlank()) newEntry else "$currentHistory;$newEntry"
             prefs[Keys.WEIGHT_HISTORY] = updated
+        }
+    }
+
+    suspend fun setTutorialCompleted(completed: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.TUTORIAL_COMPLETED] = completed
         }
     }
 

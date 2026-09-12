@@ -62,8 +62,12 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import com.example.ui.tour.LocalTourTargetReporter
+import com.example.ui.tour.TourTarget
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -116,6 +120,7 @@ fun ReportScreen(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val tourReporter = LocalTourTargetReporter.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     var showLogWeightDialog by remember { mutableStateOf(false) }
@@ -221,13 +226,23 @@ fun ReportScreen(
         // First-Time Body Stats Setup Card (if no weight entries exist yet)
         if (weightPoints.isEmpty()) {
             item {
-                BodyStatsSetupCard(
-                    initialHeight = userHeightCm,
-                    onSaveStats = { height, weight ->
-                        onUpdateHeight(height)
-                        onLogWeight(weight)
-                    }
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coords ->
+                            if (coords.isAttached) {
+                                tourReporter(TourTarget.REPORT_WEIGHT_CARD, coords.boundsInRoot())
+                            }
+                        }
+                ) {
+                    BodyStatsSetupCard(
+                        initialHeight = userHeightCm,
+                        onSaveStats = { height, weight ->
+                            onUpdateHeight(height)
+                            onLogWeight(weight)
+                        }
+                    )
+                }
             }
         }
 
@@ -283,14 +298,24 @@ fun ReportScreen(
         // Section C: Weight Tracker & Custom Line Chart (rendered when weight points exist)
         if (weightPoints.isNotEmpty()) {
             item {
-                WeightTrackerCard(
-                    currentWeight = currentWeight,
-                    heaviestWeight = heaviestWeight,
-                    lightestWeight = lightestWeight,
-                    weightPoints = weightPoints,
-                    weightUnit = weightUnit,
-                    onLogClick = { showLogWeightDialog = true }
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onGloballyPositioned { coords ->
+                            if (coords.isAttached) {
+                                tourReporter(TourTarget.REPORT_WEIGHT_CARD, coords.boundsInRoot())
+                            }
+                        }
+                ) {
+                    WeightTrackerCard(
+                        currentWeight = currentWeight,
+                        heaviestWeight = heaviestWeight,
+                        lightestWeight = lightestWeight,
+                        weightPoints = weightPoints,
+                        weightUnit = weightUnit,
+                        onLogClick = { showLogWeightDialog = true }
+                    )
+                }
             }
 
             // Section D: BMI Card with Multi-Segment Spectrum Bar
@@ -1608,13 +1633,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                            .clickable {
-                                if (heightVal > 100f) {
-                                    heightVal -= 1f
-                                    heightText = heightVal.toInt().toString()
+                                .clickable {
+                                    if (heightVal > 100f) {
+                                        heightVal -= 1f
+                                        heightText = heightVal.toInt().toString()
+                                    }
                                 }
-                            }
-                            .testTag("btn_edit_height_minus"),
+                                .testTag("btn_edit_height_minus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1643,13 +1668,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                            .clickable {
-                                if (heightVal < 250f) {
-                                    heightVal += 1f
-                                    heightText = heightVal.toInt().toString()
+                                .clickable {
+                                    if (heightVal < 250f) {
+                                        heightVal += 1f
+                                        heightText = heightVal.toInt().toString()
+                                    }
                                 }
-                            }
-                            .testTag("btn_edit_height_plus"),
+                                .testTag("btn_edit_height_plus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1679,13 +1704,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                            .clickable {
-                                if (weightVal > 30f) {
-                                    weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
-                                    weightText = String.format(Locale.US, "%.1f", weightVal)
+                                .clickable {
+                                    if (weightVal > 30f) {
+                                        weightVal = (weightVal - 0.5f).coerceAtLeast(30f)
+                                        weightText = String.format(Locale.US, "%.1f", weightVal)
+                                    }
                                 }
-                            }
-                            .testTag("btn_edit_weight_minus"),
+                                .testTag("btn_edit_weight_minus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -1714,13 +1739,13 @@ private fun EditBodyStatsDialog(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(if (isDark) Color(0xFF2A2F48) else Color(0xFFE2E6F0))
-                            .clickable {
-                                if (weightVal < 250f) {
-                                    weightVal = (weightVal + 0.5f).coerceAtMost(250f)
-                                    weightText = String.format(Locale.US, "%.1f", weightVal)
+                                .clickable {
+                                    if (weightVal < 250f) {
+                                        weightVal = (weightVal + 0.5f).coerceAtMost(250f)
+                                        weightText = String.format(Locale.US, "%.1f", weightVal)
+                                    }
                                 }
-                            }
-                            .testTag("btn_edit_weight_plus"),
+                                .testTag("btn_edit_weight_plus"),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(

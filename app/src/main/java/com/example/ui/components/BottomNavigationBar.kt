@@ -48,6 +48,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import com.example.ui.tour.LocalTourTargetReporter
+import com.example.ui.tour.TourTarget
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -99,6 +103,7 @@ fun FitPlanBottomNav(
                     selectedIcon = Icons.Filled.Home,
                     unselectedIcon = Icons.Outlined.Home,
                     testTag = "nav_home",
+                    tourTarget = TourTarget.NAV_HOME,
                     onClick = { onNavigate(AppScreen.HOME) }
                 )
 
@@ -108,6 +113,7 @@ fun FitPlanBottomNav(
                     selectedIcon = Icons.Filled.CalendarMonth,
                     unselectedIcon = Icons.Outlined.CalendarMonth,
                     testTag = "nav_planner",
+                    tourTarget = TourTarget.NAV_PLANNER,
                     onClick = { onNavigate(AppScreen.PLANNER) }
                 )
 
@@ -117,6 +123,7 @@ fun FitPlanBottomNav(
                     selectedIcon = Icons.Filled.Analytics,
                     unselectedIcon = Icons.Outlined.Analytics,
                     testTag = "nav_report",
+                    tourTarget = TourTarget.NAV_REPORT,
                     onClick = { onNavigate(AppScreen.REPORT) }
                 )
 
@@ -140,11 +147,13 @@ private fun DockNavItem(
     selectedIcon: ImageVector,
     unselectedIcon: ImageVector,
     testTag: String,
+    tourTarget: TourTarget? = null,
     onClick: () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val tourReporter = LocalTourTargetReporter.current
 
     // Active accent color: Emerald in Dark Mode, Electric Indigo in Light Mode
     val activeAccentColor = if (isDark) EmeraldGreen else ElectricIndigo
@@ -180,6 +189,11 @@ private fun DockNavItem(
 
     Box(
         modifier = Modifier
+            .onGloballyPositioned { coords ->
+                if (coords.isAttached && tourTarget != null) {
+                    tourReporter(tourTarget, coords.boundsInRoot())
+                }
+            }
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale

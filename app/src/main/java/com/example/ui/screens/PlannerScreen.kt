@@ -47,7 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
+import com.example.ui.tour.LocalTourTargetReporter
+import com.example.ui.tour.TourTarget
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -95,6 +99,7 @@ fun PlannerScreen(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val tourReporter = LocalTourTargetReporter.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
 
@@ -199,7 +204,13 @@ fun PlannerScreen(
         // Section A: Monthly Calendar Expansion & 7-Day Week Navigation Bar
         item {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        if (coords.isAttached) {
+                            tourReporter(TourTarget.PLANNER_DAYS_BAR, coords.boundsInRoot())
+                        }
+                    },
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 MonthlyCalendarExpansion(
@@ -386,6 +397,11 @@ fun PlannerScreen(
                     Box(
                         modifier = Modifier
                             .height(48.dp)
+                            .onGloballyPositioned { coords ->
+                                if (coords.isAttached) {
+                                    tourReporter(TourTarget.PLANNER_ADD_FAB, coords.boundsInRoot())
+                                }
+                            }
                             .tactileButton(
                                 onClick = { onAddActivity(selectedDayIndex) },
                                 shape = RoundedCornerShape(14.dp),
@@ -435,6 +451,11 @@ fun PlannerScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp)
+                        .onGloballyPositioned { coords ->
+                            if (coords.isAttached) {
+                                tourReporter(TourTarget.PLANNER_ADD_FAB, coords.boundsInRoot())
+                            }
+                        }
                         .tactileButton(
                             onClick = { onAddActivity(selectedDayIndex) },
                             shape = RoundedCornerShape(14.dp),
@@ -518,3 +539,4 @@ fun PlannerScreen(
         )
     }
 }
+

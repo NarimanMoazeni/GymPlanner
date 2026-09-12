@@ -23,20 +23,24 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.components.AddEditActivitySheet
 import com.example.ui.components.CopyDayPlanDialog
 import com.example.ui.components.DeleteConfirmDialog
 import com.example.ui.components.FitPlanBottomNav
-import com.example.ui.components.TutorialOverlayDialog
+import com.example.ui.components.SpotlightTourOverlay
 import com.example.ui.locale.FitPlanLocalizationProvider
 import com.example.ui.screens.ActiveWorkoutScreen
 import com.example.ui.screens.HomeScreen
@@ -46,6 +50,9 @@ import com.example.ui.screens.ReportScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.theme.FitPlanTheme
+import com.example.ui.tour.AppTourSteps
+import com.example.ui.tour.LocalTourTargetReporter
+import com.example.ui.tour.TourTarget
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +63,10 @@ fun FitPlanApp(
     val snackbarHostState = remember { SnackbarHostState() }
     var isColdStartSplashDone by rememberSaveable { mutableStateOf(false) }
 
+    var tourStepIndex by rememberSaveable { mutableIntStateOf(0) }
+    val targetBounds = remember { mutableStateMapOf<TourTarget, Rect>() }
+    val isTourActive = isColdStartSplashDone && uiState.currentScreen != AppScreen.ONBOARDING && !uiState.preferences.isTutorialCompleted
+
     LaunchedEffect(uiState.feedbackMessage) {
         uiState.feedbackMessage?.let { msg ->
             snackbarHostState.showSnackbar(msg)
@@ -63,14 +74,17 @@ fun FitPlanApp(
         }
     }
 
-    // Handle back button behavior (only active when splash is done)
-    BackHandler(enabled = isColdStartSplashDone && uiState.currentScreen != AppScreen.HOME && uiState.currentScreen != AppScreen.ONBOARDING) {
+    // Handle back button behavior (only active when splash is done and tour is not active)
+    BackHandler(enabled = isColdStartSplashDone && !isTourActive && uiState.currentScreen != AppScreen.HOME && uiState.currentScreen != AppScreen.ONBOARDING) {
         viewModel.navigateTo(AppScreen.HOME)
     }
 
     FitPlanTheme(themeMode = uiState.preferences.themeMode) {
         FitPlanLocalizationProvider(language = uiState.preferences.language) {
-            AnimatedContent(
+            CompositionLocalProvider(
+                LocalTourTargetReporter provides { target, rect -> targetBounds[target] = rect }
+            ) {
+                AnimatedContent(
                 targetState = isColdStartSplashDone,
                 transitionSpec = {
                     fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(300))
@@ -273,7 +287,9 @@ fun FitPlanApp(
                                         viewModel.importBackup(json, callback)
                                     },
                                     onReplayTutorial = {
+                                        tourStepIndex = 0
                                         viewModel.restartTutorial()
+                                        viewModel.navigateTo(AppScreen.HOME)
                                     }
                                 )
                             }
@@ -315,15 +331,43 @@ fun FitPlanApp(
                 )
             }
 
-            // First-Time User Onboarding Walkthrough Tutorial Dialog
-            if (isColdStartSplashDone && uiState.currentScreen != AppScreen.ONBOARDING && !uiState.preferences.isTutorialCompleted) {
-                TutorialOverlayDialog(
-                    onDismiss = { viewModel.completeTutorial() },
-                    onComplete = { viewModel.completeTutorial() }
+            // Dynamic Spotlight Coachmark Walkthrough Tour (Duolingo-style)
+            if (isTourActive) {
+                SpotlightTourOverlay(
+                    currentStepIndex = tourStepIndex,
+                    targetBounds = targetBounds,
+                    onNext = {
+                        if (tourStepIndex < AppTourSteps.size - 1) {
+                            tourStepIndex++
+                            val nextStep = AppTourSteps[tourStepIndex]
+                            if (uiState.currentScreen != nextStep.screen) {
+                                viewModel.navigateTo(nextStep.screen)
+                            }
+                        } else {
+                            viewModel.completeTutorial()
+                            viewModel.navigateTo(AppScreen.HOME)
+                            tourStepIndex = 0
+                        }
+                    },
+                    onPrev = {
+                        if (tourStepIndex > 0) {
+                            tourStepIndex--
+                            val prevStep = AppTourSteps[tourStepIndex]
+                            if (uiState.currentScreen != prevStep.screen) {
+                                viewModel.navigateTo(prevStep.screen)
+                            }
+                        }
+                    },
+                    onDismiss = {
+                        viewModel.completeTutorial()
+                        viewModel.navigateTo(AppScreen.HOME)
+                        tourStepIndex = 0
+                    }
                 )
             }
                     }
                 }
+            }
             }
         }
     }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +53,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
+import com.example.ui.tour.LocalTourTargetReporter
+import com.example.ui.tour.TourTarget
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -101,6 +104,7 @@ fun HomeScreen(
 ) {
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
+    val tourReporter = LocalTourTargetReporter.current
     val todayDateInfo = PersianDateHelper.getTodayDateInfo(language)
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
@@ -253,19 +257,29 @@ fun HomeScreen(
         }
 
         // Hero Card: Today's Plan (or Rest Day)
-        if (isTodayTraining) {
-            TodayTrainingHeroCard(
-                focusName = todayDayEntity?.focusName ?: strings.homeDefaultFocusName,
-                subtitle = todayDayEntity?.focusSubtitle ?: strings.homeDefaultFocusSubtitle,
-                totalActivities = todayActivities.size,
-                completedActivities = completedCount,
-                progress = progressFraction,
-                onStartWorkout = onStartWorkout
-            )
-        } else {
-            RestDayHeroCard(
-                onGoToPlanner = { onNavigate(AppScreen.PLANNER) }
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coords ->
+                    if (coords.isAttached) {
+                        tourReporter(TourTarget.HOME_TODAY_WORKOUT, coords.boundsInRoot())
+                    }
+                }
+        ) {
+            if (isTodayTraining) {
+                TodayTrainingHeroCard(
+                    focusName = todayDayEntity?.focusName ?: strings.homeDefaultFocusName,
+                    subtitle = todayDayEntity?.focusSubtitle ?: strings.homeDefaultFocusSubtitle,
+                    totalActivities = todayActivities.size,
+                    completedActivities = completedCount,
+                    progress = progressFraction,
+                    onStartWorkout = onStartWorkout
+                )
+            } else {
+                RestDayHeroCard(
+                    onGoToPlanner = { onNavigate(AppScreen.PLANNER) }
+                )
+            }
         }
 
         // Today's Activity Checklist Section

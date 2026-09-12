@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.data.local.dao.FitPlanDao
+import com.example.data.local.dao.GymPlannerDao
 import com.example.data.local.entity.ActivityEntity
 import com.example.data.local.entity.CompletedActivityEntity
 import com.example.data.local.entity.UserProfileEntity
@@ -23,7 +23,7 @@ import com.example.data.local.entity.WorkoutSessionEntity
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun fitPlanDao(): FitPlanDao
+    abstract fun gymPlannerDao(): GymPlannerDao
 
     companion object {
         @Volatile
@@ -34,7 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "fitplan_database.db"
+                    "gymplanner_database.db"
                 ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance

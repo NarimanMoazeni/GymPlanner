@@ -68,7 +68,7 @@ enum class ThemeMode {
 }
 
 @Composable
-fun FitPlanTheme(
+fun GymPlannerTheme(
     themeMode: ThemeMode = ThemeMode.DARK,
     content: @Composable () -> Unit
 ) {

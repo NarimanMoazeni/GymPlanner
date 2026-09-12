@@ -14,7 +14,7 @@ import com.example.ui.theme.ThemeMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-private val Context.dataStore by preferencesDataStore(name = "fitplan_preferences")
+private val Context.dataStore by preferencesDataStore(name = "gymplanner_preferences")
 
 data class AppPreferences(
     val language: AppLanguage = AppLanguage.PERSIAN,

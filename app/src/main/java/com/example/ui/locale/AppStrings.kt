@@ -152,7 +152,7 @@ open class AppStrings {
     open val backupImportBtn: String = "بازیابی اطلاعات (انتخاب فایل پشتیبان)"
     open val lastBackupLabel: String = "آخرین پشتیبان: %s"
     open val noBackupYet: String = "هنوز پشتیبانی گرفته نشده"
-    open val versionFooter: String = "Fit Plan • نسخه ۱.۰.۰ آفلاین"
+    open val versionFooter: String = "GymPlanner • نسخه ۱.۰.۰ آفلاین"
     open val confirmRestoreTitle: String = "بازیابی فایل پشتیبان"
     open val confirmRestoreMsg: String = "با بازیابی این فایل، داده‌های فعلی جایگزین خواهند شد. آیا ادامه می‌دهید؟"
     open val restoreSuccess: String = "اطلاعات با موفقیت بازیابی شد"
@@ -458,7 +458,7 @@ private class EnglishStringsImpl : AppStrings() {
     override val backupImportBtn: String = "Restore Data (Import JSON)"
     override val lastBackupLabel: String = "Last backup: %s"
     override val noBackupYet: String = "No backup created yet"
-    override val versionFooter: String = "Fit Plan • v1.0.0 Offline"
+    override val versionFooter: String = "GymPlanner • v1.0.0 Offline"
     override val confirmRestoreTitle: String = "Restore Backup"
     override val confirmRestoreMsg: String = "Restoring this backup file will replace current plans and records. Continue?"
     override val restoreSuccess: String = "Data restored successfully"
@@ -631,7 +631,7 @@ val LocalAppStrings = compositionLocalOf { PersianStrings }
 val LocalCurrentLanguage = compositionLocalOf { AppLanguage.PERSIAN }
 
 @Composable
-fun FitPlanLocalizationProvider(
+fun GymPlannerLocalizationProvider(
     language: AppLanguage,
     content: @Composable () -> Unit
 ) {

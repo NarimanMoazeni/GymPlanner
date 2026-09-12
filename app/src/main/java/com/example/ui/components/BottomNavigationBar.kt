@@ -70,7 +70,7 @@ import com.example.ui.theme.frostedDock
  * - Tactile spring scale physics on press
  */
 @Composable
-fun FitPlanBottomNav(
+fun GymPlannerBottomNav(
     currentScreen: AppScreen,
     onNavigate: (AppScreen) -> Unit,
     modifier: Modifier = Modifier

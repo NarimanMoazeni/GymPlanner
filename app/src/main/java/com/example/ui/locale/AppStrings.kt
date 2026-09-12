@@ -278,6 +278,9 @@ open class AppStrings {
     open val calendarDaysWithWorkout: String = "روزهای دارای تمرین"
     open val calendarSelectedDay: String = "روز انتخاب‌شده"
     open val calendarTodayBadge: String = "امروز"
+    // Splash
+    open val splashTagline: String = "برنامه‌ریزی هوشمند تمرینات"
+    open val splashLoading: String = "در حال آماده‌سازی..."
 }
 
 val PersianStrings: AppStrings = AppStrings()
@@ -544,6 +547,9 @@ private class EnglishStringsImpl : AppStrings() {
     override val calendarDaysWithWorkout: String = "Days with planned workouts"
     override val calendarSelectedDay: String = "Selected day"
     override val calendarTodayBadge: String = "Today"
+    // Splash
+    override val splashTagline: String = "Smart Workout Planner"
+    override val splashLoading: String = "Getting ready..."
 }
 
 val EnglishStrings: AppStrings = EnglishStringsImpl()

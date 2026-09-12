@@ -7,26 +7,22 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -44,10 +40,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.R
 import com.example.ui.locale.LocalAppStrings
 import com.example.ui.locale.LocalCurrentLanguage
 import com.example.ui.locale.formatDigits
@@ -60,16 +60,15 @@ import kotlinx.coroutines.launch
 import kotlin.math.sin
 
 /**
- * High-performance motion graphic Splash Screen for GymPlanner.
+ * Ultra-smooth, logo-synchronized Splash Screen for GymPlanner.
  * 
- * Choreography:
- * 1. Initial State: Minimalist floating clipboard and fitness emblem fade in;
- *    the loading bar track is ALREADY present and waiting to be colored.
- * 2. Descent: The 3D-angled pencil descends smoothly from the clipboard toward the track start.
- * 3. Active Coloring: The pencil draws across the track with rhythmic micro-wobbles,
- *    painting a vibrant neon gradient behind it while emitting glowing sparks from the tip.
- * 4. Completion: At 100%, the pencil lifts with a small tap, the bar pulses, and the screen
- *    smoothly crossfades into the main application.
+ * Key refinements:
+ * 1. Visual Authenticity: Uses the exact official app logo (ic_launcher_foreground),
+ *    and the pen is drawn to exactly mirror the logo's mint-and-white stylus with clip and cap.
+ * 2. Absolute Synchrony: The entire canvas and animation are strictly locked to LTR coordinates.
+ *    The pen tip's X position is mathematically identical to the leading edge of the progress fill,
+ *    so it colors directly ON the track from left to right with zero divergence.
+ * 3. Fast & Seamless: Blends effortlessly with the Android 12+ system splash window.
  */
 @Composable
 fun SplashScreen(
@@ -79,68 +78,52 @@ fun SplashScreen(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
 
-    // Animation progress controllers
-    val logoScale = remember { Animatable(0.75f) }
+    // Animations
+    val logoScale = remember { Animatable(0.85f) }
     val logoAlpha = remember { Animatable(0f) }
     val elementsAlpha = remember { Animatable(0f) }
 
-    // Pencil spatial coordinates (relative to center stage)
-    val pencilX = remember { Animatable(60f) }
-    val pencilY = remember { Animatable(-110f) }
-    val pencilRotation = remember { Animatable(-35f) }
-    val pencilScale = remember { Animatable(0.9f) }
+    // Pen transition phase:
+    // descentPhase: 0.0f (at logo resting position) -> 1.0f (landed on loading track start)
+    val penDescent = remember { Animatable(0f) }
 
-    // Progress of coloring the bar (0.0f -> 1.0f)
+    // Progress of drawing the bar: 0.0f -> 1.0f
     val progress = remember { Animatable(0f) }
+
+    // Finish flourish
+    val penBounce = remember { Animatable(0f) }
     val completionPulse = remember { Animatable(0f) }
     val screenExitAlpha = remember { Animatable(1f) }
 
     LaunchedEffect(Unit) {
-        // --- PHASE 1: Logo and Stage Materialization (0 - 450ms) ---
+        // --- PHASE 1: Logo & Stage Materialization (0 - 400ms) ---
         launch {
-            logoAlpha.animateTo(1f, animationSpec = tween(400, easing = FastOutSlowInEasing))
+            logoAlpha.animateTo(1f, animationSpec = tween(350, easing = FastOutSlowInEasing))
         }
         launch {
             logoScale.animateTo(1f, animationSpec = spring(dampingRatio = 0.72f, stiffness = Spring.StiffnessMediumLow))
         }
         launch {
-            elementsAlpha.animateTo(1f, animationSpec = tween(450, easing = LinearEasing))
+            elementsAlpha.animateTo(1f, animationSpec = tween(400, easing = LinearEasing))
         }
 
-        delay(400)
+        delay(350)
 
-        // --- PHASE 2: Pencil Swoop Down to Track (400ms - 850ms) ---
-        launch {
-            pencilX.animateTo(-100f, animationSpec = tween(450, easing = FastOutSlowInEasing))
-        }
-        launch {
-            pencilY.animateTo(145f, animationSpec = spring(dampingRatio = 0.75f, stiffness = Spring.StiffnessMediumLow))
-        }
-        launch {
-            pencilRotation.animateTo(-42f, animationSpec = tween(450, easing = FastOutSlowInEasing))
-        }
-        launch {
-            pencilScale.animateTo(1.05f, animationSpec = tween(450))
-        }
+        // --- PHASE 2: Pen Swoop Down Directly to Track Start (350ms - 750ms) ---
+        penDescent.animateTo(
+            targetValue = 1f,
+            animationSpec = spring(dampingRatio = 0.78f, stiffness = Spring.StiffnessMediumLow)
+        )
 
-        delay(450)
+        // --- PHASE 3: Pen Colors the Track (750ms - 2150ms, duration = 1400ms) ---
+        progress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(1400, easing = FastOutSlowInEasing)
+        )
 
-        // --- PHASE 3: Pencil Colors the Track (850ms - 2250ms, duration = 1400ms) ---
+        // --- PHASE 4: Completion Tap, Pulse Wave & Smooth Exit (2150ms - 2500ms) ---
         launch {
-            pencilX.animateTo(100f, animationSpec = tween(1400, easing = FastOutSlowInEasing))
-        }
-        launch {
-            progress.animateTo(1f, animationSpec = tween(1400, easing = FastOutSlowInEasing))
-        }
-
-        delay(1400)
-
-        // --- PHASE 4: Completion Tap, Glow Pulse & Exit Transition (2250ms - 2600ms) ---
-        launch {
-            pencilY.animateTo(125f, animationSpec = spring(dampingRatio = 0.5f, stiffness = Spring.StiffnessMedium))
-        }
-        launch {
-            pencilRotation.animateTo(-25f, animationSpec = tween(200))
+            penBounce.animateTo(1f, animationSpec = spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium))
         }
         launch {
             completionPulse.animateTo(1f, animationSpec = tween(250, easing = FastOutSlowInEasing))
@@ -149,417 +132,352 @@ fun SplashScreen(
         delay(300)
 
         // Fade out splash screen
-        screenExitAlpha.animateTo(0f, animationSpec = tween(250, easing = FastOutSlowInEasing))
+        screenExitAlpha.animateTo(0f, animationSpec = tween(220, easing = FastOutSlowInEasing))
 
         // Trigger finish callback
         onSplashFinished()
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(DarkBackground)
-            .alpha(screenExitAlpha.value)
-            .testTag("splash_screen_root"),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .scale(logoScale.value)
-                .alpha(logoAlpha.value)
-        ) {
-            // Stage Area: Contains Clipboard Logo and the Floating/Coloring Pencil
-            Box(
-                modifier = Modifier
-                    .size(280.dp, 320.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                // 1. Floating Minimalist Clipboard Logo (Base)
-                ClipboardLogoEmblem(
-                    modifier = Modifier.offset(y = (-30).dp)
-                )
-
-                // 2. Pre-existing Loading Bar Track (Always present on stage)
-                PreExistingLoadingTrack(
-                    progress = progress.value,
-                    completionPulse = completionPulse.value,
-                    modifier = Modifier
-                        .offset(y = 145.dp)
-                        .alpha(elementsAlpha.value)
-                )
-
-                // 3. Dynamic Animated Pencil with hand-coloring micro-wobble
-                val coloringMicroWobble = if (progress.value > 0.01f && progress.value < 0.99f) {
-                    (sin(progress.value * 45f) * 2.8f)
-                } else {
-                    0f
-                }
-
-                Canvas(
-                    modifier = Modifier
-                        .size(60.dp, 60.dp)
-                        .offset(
-                            x = pencilX.value.dp,
-                            y = (pencilY.value + coloringMicroWobble).dp
-                        )
-                        .scale(pencilScale.value)
-                ) {
-                    drawRealisticPencil(
-                        rotationDegrees = pencilRotation.value,
-                        isDrawing = progress.value > 0.02f && progress.value < 0.98f
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // App Brand Name & Dynamic Persian / English Tagline
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.alpha(elementsAlpha.value)
-            ) {
-                Text(
-                    text = strings.appName,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 28.sp,
-                        letterSpacing = 0.sp
-                    ),
-                    color = Color.White
-                )
-
-                Text(
-                    text = strings.splashTagline,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
-                        letterSpacing = 0.sp
-                    ),
-                    color = Color(0xFF94A3B8)
-                )
-
-                // Progress Percentage Counter (Persian Digits)
-                val percentInt = (progress.value * 100).toInt().coerceIn(0, 100)
-                Text(
-                    text = "${formatDigits(percentInt, language)}٪",
-                    style = MaterialTheme.typography.labelSmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        letterSpacing = 0.sp
-                    ),
-                    color = if (percentInt == 100) KineticGreen else SleekIndigo,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ClipboardLogoEmblem(
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .size(130.dp, 160.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
-
-            // 1. Subtle Radial Ambient Glow behind clipboard
-            drawCircle(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        ElectricIndigo.copy(alpha = 0.25f),
-                        Color.Transparent
-                    ),
-                    center = Offset(width / 2f, height / 2f),
-                    radius = width * 0.9f
-                )
-            )
-
-            // 2. Clipboard Body (Tactile dark slate card)
-            val boardCorner = 18.dp.toPx()
-            val boardRect = Size(width * 0.85f, height * 0.92f)
-            val boardTopLeft = Offset((width - boardRect.width) / 2f, height * 0.08f)
-
-            // Board Surface
-            drawRoundRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1E2638),
-                        Color(0xFF141926)
-                    )
-                ),
-                topLeft = boardTopLeft,
-                size = boardRect,
-                cornerRadius = CornerRadius(boardCorner, boardCorner)
-            )
-
-            // Outer crisp edge
-            drawRoundRect(
-                color = Color(0xFF334155),
-                topLeft = boardTopLeft,
-                size = boardRect,
-                cornerRadius = CornerRadius(boardCorner, boardCorner),
-                style = Stroke(width = 1.5.dp.toPx())
-            )
-
-            // 3. Inner White/Light Note Sheet
-            val sheetMarginX = 10.dp.toPx()
-            val sheetTop = boardTopLeft.y + 18.dp.toPx()
-            val sheetWidth = boardRect.width - (sheetMarginX * 2)
-            val sheetHeight = boardRect.height - 24.dp.toPx()
-            val sheetCorner = 10.dp.toPx()
-
-            drawRoundRect(
-                color = Color(0xFF0F1420),
-                topLeft = Offset(boardTopLeft.x + sheetMarginX, sheetTop),
-                size = Size(sheetWidth, sheetHeight),
-                cornerRadius = CornerRadius(sheetCorner, sheetCorner)
-            )
-
-            // 4. Subtle Planner Ruling Lines
-            val lineYStart = sheetTop + 42.dp.toPx()
-            val lineSpacing = 14.dp.toPx()
-            val lineWidth = sheetWidth * 0.75f
-            val lineStartX = boardTopLeft.x + sheetMarginX + (sheetWidth - lineWidth) / 2f
-
-            for (i in 0..2) {
-                val y = lineYStart + (i * lineSpacing)
-                drawLine(
-                    color = Color(0xFF26334A),
-                    start = Offset(lineStartX, y),
-                    end = Offset(lineStartX + lineWidth, y),
-                    strokeWidth = 2.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
-            }
-
-            // 5. Metallic Top Binder Clip
-            val clipWidth = width * 0.38f
-            val clipHeight = 16.dp.toPx()
-            val clipX = (width - clipWidth) / 2f
-            val clipY = boardTopLeft.y - 6.dp.toPx()
-
-            // Clip base
-            drawRoundRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(Color(0xFF94A3B8), Color(0xFF475569))
-                ),
-                topLeft = Offset(clipX, clipY),
-                size = Size(clipWidth, clipHeight),
-                cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx())
-            )
-
-            // Clip inner hole
-            drawCircle(
-                color = Color(0xFF0E1116),
-                radius = 3.dp.toPx(),
-                center = Offset(width / 2f, clipY + clipHeight / 2f)
-            )
-        }
-
-        // 6. Fitness Dumbbell Badge on Clipboard Sheet
+    // Force strictly LTR coordinate system for the splash animation so RTL locales
+    // never invert the pen movement or progress bar direction.
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Box(
-            modifier = Modifier
-                .offset(y = (-6).dp)
-                .size(38.dp)
-                .clip(CircleShape)
-                .background(ElectricIndigo.copy(alpha = 0.2f)),
+            modifier = modifier
+                .fillMaxSize()
+                .background(DarkBackground)
+                .alpha(screenExitAlpha.value)
+                .testTag("splash_screen_root"),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.FitnessCenter,
-                contentDescription = null,
-                tint = KineticGreen,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun PreExistingLoadingTrack(
-    progress: Float,
-    completionPulse: Float,
-    modifier: Modifier = Modifier
-) {
-    val trackWidth = 220.dp
-    val trackHeight = 12.dp
-
-    Box(
-        modifier = modifier
-            .width(trackWidth)
-            .height(trackHeight)
-            .clip(RoundedCornerShape(6.dp))
-            .background(Color(0xFF0B0F15))
-            .border(
-                width = 1.dp,
-                color = if (completionPulse > 0.1f) KineticGreen else Color(0xFF1E293B),
-                shape = RoundedCornerShape(6.dp)
-            )
-    ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
-
-            // 1. Inset well inner shadow simulation
-            drawRect(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Black.copy(alpha = 0.45f),
-                        Color.Transparent
-                    )
-                )
-            )
-
-            // 2. Active colored progress filled by pencil
-            if (progress > 0.005f) {
-                val fillWidth = width * progress.coerceIn(0f, 1f)
-
-                // Neon colored trail painted by pencil
-                drawRoundRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            ElectricIndigo,
-                            SleekIndigo,
-                            KineticGreen
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .scale(logoScale.value)
+                    .alpha(logoAlpha.value)
+            ) {
+                // Stage Container: Logo + Ambient Glow + Unified Track & Pen Canvas
+                Box(
+                    modifier = Modifier.size(280.dp, 280.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    // 1. Soft Ambient Mint/Teal Glow behind the Official Logo
+                    Canvas(
+                        modifier = Modifier
+                            .size(170.dp)
+                            .align(Alignment.TopCenter)
+                    ) {
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFF2EE59D).copy(alpha = 0.22f),
+                                    Color(0xFF10B981).copy(alpha = 0.08f),
+                                    Color.Transparent
+                                ),
+                                radius = size.width * 0.75f
+                            )
                         )
-                    ),
-                    topLeft = Offset(0f, 0f),
-                    size = Size(fillWidth, height),
-                    cornerRadius = CornerRadius(6.dp.toPx(), 6.dp.toPx())
-                )
+                    }
 
-                // Top glossy highlight reflection on the painted line
-                drawLine(
-                    color = Color.White.copy(alpha = 0.35f),
-                    start = Offset(2.dp.toPx(), 2.dp.toPx()),
-                    end = Offset(fillWidth - 2.dp.toPx(), 2.dp.toPx()),
-                    strokeWidth = 1.5.dp.toPx(),
-                    cap = StrokeCap.Round
-                )
+                    // 2. Official App Logo (ic_launcher_foreground) matching user's exact design
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = strings.appName,
+                        modifier = Modifier
+                            .size(155.dp)
+                            .align(Alignment.TopCenter)
+                            .clip(RoundedCornerShape(32.dp))
+                    )
 
-                // Contact Glow Spark at the pencil tip contact point
-                val sparkX = fillWidth
-                val sparkY = height / 2f
+                    // 3. Unified Synchronized Canvas (Track + Progress Fill + Logo-Matched Pen)
+                    // Placed directly below the logo. Width = 280.dp, Height = 100.dp
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp)
+                            .align(Alignment.BottomCenter)
+                            .alpha(elementsAlpha.value)
+                    ) {
+                        val canvasW = size.width
+                        val trackWidth = 230.dp.toPx()
+                        val trackHeight = 13.dp.toPx()
+                        val trackLeft = (canvasW - trackWidth) / 2f
+                        val trackRight = trackLeft + trackWidth
+                        val trackTop = 22.dp.toPx()
+                        val trackCenterY = trackTop + (trackHeight / 2f)
 
-                drawCircle(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color.White,
-                            KineticGreen.copy(alpha = 0.8f),
-                            Color.Transparent
+                        // 1. Draw Pre-existing Loading Track (Inset capsule well)
+                        // Inset well background
+                        drawRoundRect(
+                            color = Color(0xFF0F141F),
+                            topLeft = Offset(trackLeft, trackTop),
+                            size = Size(trackWidth, trackHeight),
+                            cornerRadius = CornerRadius(trackHeight / 2f, trackHeight / 2f)
+                        )
+                        // Track border: faint mint outline (pulsing on completion)
+                        val borderColor = if (completionPulse.value > 0.05f) {
+                            Color(0xFF2EE59D)
+                        } else {
+                            Color(0xFF1E2C3D)
+                        }
+                        drawRoundRect(
+                            color = borderColor,
+                            topLeft = Offset(trackLeft, trackTop),
+                            size = Size(trackWidth, trackHeight),
+                            cornerRadius = CornerRadius(trackHeight / 2f, trackHeight / 2f),
+                            style = Stroke(width = 1.2.dp.toPx())
+                        )
+
+                        // 2. Synchronized Progress Fill
+                        val p = progress.value.coerceIn(0f, 1f)
+                        val currentFillWidth = trackWidth * p
+                        val tipContactX = trackLeft + currentFillWidth
+
+                        if (p > 0.005f) {
+                            // Draw neon gradient fill up to exact tipContactX
+                            drawRoundRect(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        ElectricIndigo,
+                                        Color(0xFF2EE59D),
+                                        KineticGreen
+                                    ),
+                                    startX = trackLeft,
+                                    endX = trackRight
+                                ),
+                                topLeft = Offset(trackLeft, trackTop),
+                                size = Size(currentFillWidth, trackHeight),
+                                cornerRadius = CornerRadius(trackHeight / 2f, trackHeight / 2f)
+                            )
+
+                            // Top glossy highlight reflection line
+                            drawLine(
+                                color = Color.White.copy(alpha = 0.40f),
+                                start = Offset(trackLeft + 3.dp.toPx(), trackTop + 2.dp.toPx()),
+                                end = Offset(tipContactX - 2.dp.toPx(), trackTop + 2.dp.toPx()),
+                                strokeWidth = 1.5.dp.toPx(),
+                                cap = StrokeCap.Round
+                            )
+
+                            // Glowing contact spark orb directly where the pen tip touches the track
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color.White,
+                                        Color(0xFF2EE59D).copy(alpha = 0.85f),
+                                        Color.Transparent
+                                    ),
+                                    center = Offset(tipContactX, trackCenterY),
+                                    radius = 8.dp.toPx()
+                                ),
+                                center = Offset(tipContactX, trackCenterY),
+                                radius = 8.dp.toPx()
+                            )
+                        }
+
+                        // 3. Completion Pulse Flash
+                        if (completionPulse.value > 0.05f) {
+                            drawRoundRect(
+                                color = Color.White.copy(alpha = (1f - completionPulse.value) * 0.5f),
+                                topLeft = Offset(trackLeft, trackTop),
+                                size = Size(trackWidth, trackHeight),
+                                cornerRadius = CornerRadius(trackHeight / 2f, trackHeight / 2f)
+                            )
+                        }
+
+                        // 4. Calculate Pen Coordinates
+                        // Resting position near bottom-right of logo:
+                        val penRestX = trackRight - 15.dp.toPx()
+                        val penRestY = -40.dp.toPx() // above canvas top, near logo pen position
+
+                        // When descending (Phase 2): interpolate from (penRestX, penRestY) to (trackLeft, trackCenterY)
+                        val descentProgress = penDescent.value
+                        val penCurrentX: Float
+                        val penCurrentY: Float
+                        val penRotation: Float
+
+                        if (descentProgress < 1f) {
+                            // Interpolate swoop down
+                            penCurrentX = penRestX + (trackLeft - penRestX) * descentProgress
+                            penCurrentY = penRestY + (trackCenterY - penRestY) * descentProgress
+                            penRotation = -30f + (-12f * descentProgress) // tilt to -42 degrees
+                        } else {
+                            // Phase 3 & 4: Locked strictly to the front edge of the progress fill!
+                            // tipContactX is GUARANTEED to be the exact front of the colored track
+                            val wobbleY = if (p in 0.02f..0.98f) {
+                                (sin(p * 40f) * 2.2.dp.toPx())
+                            } else {
+                                0f
+                            }
+                            val bounceLiftY = penBounce.value * 12.dp.toPx()
+
+                            penCurrentX = tipContactX
+                            penCurrentY = trackCenterY + wobbleY - bounceLiftY
+                            penRotation = if (penBounce.value > 0.1f) -28f else -42f
+                        }
+
+                        // Draw the official-styled Mint & White Stylus Pen with tip at (penCurrentX, penCurrentY)
+                        drawOfficialLogoStylusPen(
+                            tipX = penCurrentX,
+                            tipY = penCurrentY,
+                            rotationDegrees = penRotation,
+                            isActivelyDrawing = p in 0.02f..0.98f
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // App Brand Name & Tagline
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.alpha(elementsAlpha.value)
+                ) {
+                    Text(
+                        text = strings.appName,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 26.sp,
+                            letterSpacing = 0.sp
                         ),
-                        center = Offset(sparkX, sparkY),
-                        radius = 9.dp.toPx()
-                    ),
-                    center = Offset(sparkX, sparkY),
-                    radius = 9.dp.toPx()
-                )
-            }
+                        color = Color.White
+                    )
 
-            // 3. Completion Flash wave
-            if (completionPulse > 0.05f) {
-                drawRect(
-                    color = Color.White.copy(alpha = (1f - completionPulse) * 0.4f)
-                )
+                    Text(
+                        text = strings.splashTagline,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        color = Color(0xFF94A3B8)
+                    )
+
+                    // Live Percentage Counter (with Persian Digits)
+                    val percentInt = (progress.value * 100).toInt().coerceIn(0, 100)
+                    Text(
+                        text = "${formatDigits(percentInt, language)}٪",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            letterSpacing = 0.sp
+                        ),
+                        color = if (percentInt == 100) Color(0xFF2EE59D) else SleekIndigo,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
         }
     }
 }
 
-private fun DrawScope.drawRealisticPencil(
+/**
+ * Renders the exact stylus pen from the GymPlanner logo:
+ * - Crisp white conical tip with dark writing nib.
+ * - Vibrant mint-green (0xFF2EE59D) ergonomic barrel with depth facet lines.
+ * - Crisp white side pocket clip.
+ * - Crisp white clicker button cap at top.
+ * 
+ * The tip of the pen is positioned exactly at (tipX, tipY).
+ */
+private fun DrawScope.drawOfficialLogoStylusPen(
+    tipX: Float,
+    tipY: Float,
     rotationDegrees: Float,
-    isDrawing: Boolean
+    isActivelyDrawing: Boolean
 ) {
-    rotate(degrees = rotationDegrees, pivot = Offset.Zero) {
-        val pencilLength = 46.dp.toPx()
-        val pencilWidth = 9.dp.toPx()
-        val halfW = pencilWidth / 2f
+    // Translate coordinate space to the pen tip, then rotate around it
+    translate(left = tipX, top = tipY) {
+        rotate(degrees = rotationDegrees, pivot = Offset.Zero) {
+            val penLength = 48.dp.toPx()
+            val penWidth = 10.dp.toPx()
+            val halfW = penWidth / 2f
 
-        // 1. Wooden cone section
-        val coneHeight = 12.dp.toPx()
-        val woodPath = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(-halfW, -coneHeight)
-            lineTo(halfW, -coneHeight)
-            close()
-        }
-        drawPath(path = woodPath, color = Color(0xFFD4A373))
+            // 1. Conical White Tip: extends from Y=0 to Y=-11dp
+            val coneHeight = 11.dp.toPx()
+            val conePath = Path().apply {
+                moveTo(0f, 0f) // The exact contact point
+                lineTo(-halfW, -coneHeight)
+                lineTo(halfW, -coneHeight)
+                close()
+            }
+            drawPath(path = conePath, color = Color(0xFFF8FAFC)) // Pure crisp white
 
-        // 2. Graphite/Lead tip
-        val leadHeight = 4.5.dp.toPx()
-        val leadW = halfW * (leadHeight / coneHeight)
-        val leadPath = Path().apply {
-            moveTo(0f, 0f)
-            lineTo(-leadW, -leadHeight)
-            lineTo(leadW, -leadHeight)
-            close()
-        }
-        drawPath(
-            path = leadPath,
-            color = if (isDrawing) KineticGreen else Color(0xFF1E293B)
-        )
+            // 2. Dark Nib Point at the very tip: Y=0 to Y=-3.5dp
+            val nibHeight = 3.5.dp.toPx()
+            val nibW = halfW * (nibHeight / coneHeight)
+            val nibPath = Path().apply {
+                moveTo(0f, 0f)
+                lineTo(-nibW, -nibHeight)
+                lineTo(leadW = nibW, -nibHeight)
+                close()
+            }
+            drawPath(path = nibPath, color = Color(0xFF1E293B))
 
-        // 3. Main Hexagonal Body (Faceted 3D Stripes)
-        val bodyStartY = -coneHeight
-        val bodyEndY = -(pencilLength - 9.dp.toPx())
-        val bodyHeight = bodyStartY - bodyEndY
+            // 3. Main Mint Green Barrel (matching the logo's #2EE59D): from Y=-coneHeight to Y=-(penLength - 7dp)
+            val barrelStartY = -coneHeight
+            val barrelEndY = -(penLength - 7.dp.toPx())
+            val barrelHeight = barrelStartY - barrelEndY
 
-        drawRect(
-            color = Color(0xFF3730A3),
-            topLeft = Offset(-halfW, bodyEndY),
-            size = Size(pencilWidth * 0.33f, bodyHeight)
-        )
-        drawRect(
-            color = ElectricIndigo,
-            topLeft = Offset(-halfW + pencilWidth * 0.33f, bodyEndY),
-            size = Size(pencilWidth * 0.34f, bodyHeight)
-        )
-        drawRect(
-            color = SleekIndigo,
-            topLeft = Offset(-halfW + pencilWidth * 0.67f, bodyEndY),
-            size = Size(pencilWidth * 0.33f, bodyHeight)
-        )
-
-        // 4. Metallic Ferrule (Ring)
-        val ferruleEndY = bodyEndY - 4.5.dp.toPx()
-        drawRect(
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    Color(0xFF94A3B8),
-                    Color(0xFFF1F5F9),
-                    Color(0xFF64748B)
-                )
-            ),
-            topLeft = Offset(-halfW, ferruleEndY),
-            size = Size(pencilWidth, 4.5.dp.toPx())
-        )
-
-        // 5. Stylus / Eraser Rounded Cap
-        val capHeight = 5.5.dp.toPx()
-        val capEndY = ferruleEndY - capHeight
-        drawRoundRect(
-            color = Color(0xFFF43F5E),
-            topLeft = Offset(-halfW, capEndY),
-            size = Size(pencilWidth, capHeight + 2.dp.toPx()),
-            cornerRadius = CornerRadius(3.dp.toPx(), 3.dp.toPx())
-        )
-
-        // 6. Active Drawing Glow around tip
-        if (isDrawing) {
-            drawCircle(
-                color = KineticGreen.copy(alpha = 0.5f),
-                radius = 3.5.dp.toPx(),
-                center = Offset(0f, 0f)
+            // Darker mint outline/shadow facet
+            drawRect(
+                color = Color(0xFF10B981),
+                topLeft = Offset(-halfW, barrelEndY),
+                size = Size(penWidth * 0.35f, barrelHeight)
             )
+            // Primary vibrant neon mint facet (matching logo)
+            drawRect(
+                color = Color(0xFF2EE59D),
+                topLeft = Offset(-halfW + penWidth * 0.35f, barrelEndY),
+                size = Size(penWidth * 0.40f, barrelHeight)
+            )
+            // Lighter highlight mint facet
+            drawRect(
+                color = Color(0xFF6EE7B7),
+                topLeft = Offset(-halfW + penWidth * 0.75f, barrelEndY),
+                size = Size(penWidth * 0.25f, barrelHeight)
+            )
+
+            // Outline stroke around barrel for crisp cartoon-style definition like the logo
+            drawRect(
+                color = Color(0xFF0F172A).copy(alpha = 0.6f),
+                topLeft = Offset(-halfW, barrelEndY),
+                size = Size(penWidth, barrelHeight),
+                style = Stroke(width = 1.dp.toPx())
+            )
+
+            // 4. White Side Pocket Clip (exact feature from the logo!)
+            // Attached near top of barrel, extends along right side
+            val clipTop = barrelEndY + 2.dp.toPx()
+            val clipHeight = 16.dp.toPx()
+            val clipW = 3.dp.toPx()
+
+            drawRoundRect(
+                color = Color(0xFFF8FAFC), // White clip
+                topLeft = Offset(halfW, clipTop),
+                size = Size(clipW, clipHeight),
+                cornerRadius = CornerRadius(1.5.dp.toPx(), 1.5.dp.toPx())
+            )
+
+            // 5. White Top Clicker Button Cap: from barrelEndY to barrelEndY - 6dp
+            val capHeight = 6.dp.toPx()
+            val capY = barrelEndY - capHeight
+            drawRoundRect(
+                color = Color(0xFFF8FAFC), // Crisp white cap
+                topLeft = Offset(-halfW * 0.85f, capY),
+                size = Size(penWidth * 0.85f, capHeight + 1.dp.toPx()),
+                cornerRadius = CornerRadius(2.5.dp.toPx(), 2.5.dp.toPx())
+            )
+
+            // 6. Active Drawing Glow at the tip
+            if (isActivelyDrawing) {
+                drawCircle(
+                    color = Color(0xFF2EE59D).copy(alpha = 0.65f),
+                    radius = 4.dp.toPx(),
+                    center = Offset.Zero
+                )
+            }
         }
     }
 }

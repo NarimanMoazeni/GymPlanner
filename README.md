@@ -1,6 +1,7 @@
 <div align="center">
 
-  <img src="app/src/main/res/drawable/ic_splash_logo_base.png" alt="GymPlanner Logo" width="135" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);" />
+  <img src="docs/images/app_logo.png" alt="GymPlanner Official Logo" width="140" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.45);" />
+
 
   # 🏋️‍♂️ GymPlanner
   ### اپلیکیشن هوشمند، مدرن و کاملاً آفلاین برنامه‌ریزی تمرینات ورزشی و بدنسازی

@@ -127,8 +127,30 @@
 ## 📦 راهنمای نصب و دریافت برنامه
 
 ### ۱. دانلود مستقیم فایل نصبی (APK):
-برای دانلود آخرین نسخه آماده نصب، به بخش رلیزهای رسمی گیت‌هاب مراجعه نمایید:  
+فایل رسمی و آماده نصب اپلیکیشن در بخش Releases گیت‌هاب قرار گرفته است:
+
+<br />
+
+<div align="center">
+
+[![Download APK](https://img.shields.io/badge/دانلود_مستقیم_فایل_نصبی-GymPlanner_v1.0.0.apk-00C853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/NariManoV21/GymPlanner/releases/download/v1.0.0/GymPlanner-v1.0.0.apk)
+
+<br />
+
 👉 **[مشاهده و دریافت نسخه v1.0.0 در GitHub Releases](https://github.com/NariManoV21/GymPlanner/releases/tag/v1.0.0)**
+
+</div>
+
+<br />
+
+| مشخصه | مقدار |
+| :--- | :--- |
+| **نام فایل** | `GymPlanner-v1.0.0.apk` |
+| **حجم** | ۱۸.۱ مگابایت (19,025,286 بایت) |
+| **حداقل اندروید** | Android 7.0+ (API 24+) |
+| **SHA-256** | `44b059df169ce8d5ffe308db7c7d12e9285ce9f70285623940318877c387dfa4` |
+
+<br />
 
 ### ۲. بیلد از روی سورس‌کد:
 جهت کامپایل پروژه در کامپیوتر شخصی:

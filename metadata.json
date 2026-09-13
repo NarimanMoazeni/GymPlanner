@@ -1,6 +1,8 @@
 {
   "name": "GymPlanner",
-  "description": "Personal workout planner with weekly scheduling, daily activity planning, and offline persistence.",
+  "description": "A comprehensive gym workout planner and tracker application",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

@@ -23,11 +23,11 @@
 > ### 🕊️ یادبود و تقدیم
 > <div dir="rtl" align="right">
 > 
-> **این اثر با تمام احترام و مهر، تقدیم می‌شود به یاد و خاطره جاودان دوست خوب و عزیزمان «مهرداد»** 🖤  
+> **این اثر با تمام احترام و مهر، تقدیم می‌شود به یاد و خاطره جاودان دوست خوب و عزیزمان «مهرشاد»** 🖤  
 > 
 > رفتنت اندوهی بزرگ بر جای گذاشت، اما نام و یاد زیبایت همواره در قلب ما زنده خواهد ماند. تمامی مراحل طراحی، توسعه و به ثمر نشستن این اپلیکیشن با خاطرات فراموش‌نشدنی تو همراه بوده است.  
 > 
-> *Dedicated with love and sorrow to the eternal memory of our dear friend, Mehrdad.*
+> *Dedicated with love and sorrow to the eternal memory of our dear friend, Mehrshad.*
 > </div>
 
 ---
@@ -69,35 +69,29 @@
 
 <div dir="rtl" align="right">
 
-## 🏛 معماری نرم‌افزار
+## 🏛 معماری نرم‌افزار (Software Architecture)
 
-پروژه با به‌کارگیری اصول **Clean Architecture** و الگوی واکنشی **MVI / MVVM** سازمان‌دهی شده است:
+پروژه با به‌کارگیری اصول پیشرفته **Clean Architecture** و الگوی واکنشی **MVI / MVVM** در بستری کاملاً ماژولار و تفکیک‌شده طراحی گردیده است:
 
 </div>
 
-```mermaid
-flowchart TD
-    subgraph UI ["🎨 UI Layer (Jetpack Compose)"]
-        Activity["MainActivity"] --> App["GymPlannerApp"]
-        App --> Home["HomeScreen (داشبورد تمرین امروز)"]
-        App --> Planner["PlannerScreen (برنامه‌ریز و تقویم شمسی)"]
-        App --> Report["ReportScreen (نمودار وزن و BMI)"]
-        App --> Workout["ActiveWorkoutScreen (تمرین زنده و تایمر)"]
-        App --> Settings["SettingsScreen (تنظیمات، تم، زبان، بکاپ)"]
-        App --> Tour["SpotlightTourOverlay (تور نورافکنی دولینگو)"]
-    end
+<br />
 
-    subgraph State ["⚡ Presentation & State Management"]
-        VM["GymPlannerViewModel"] -->|"StateFlow<GymPlannerUiState>"| App
-    end
+<div align="center">
+  <img src="docs/images/architecture_diagram.jpg" alt="GymPlanner Software Architecture Diagram" width="100%" style="border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);" />
+</div>
 
-    subgraph Data ["💾 Data & Storage Layer"]
-        VM --> Repo["GymPlannerRepository"]
-        Repo --> Room["Room SQLite (GymPlannerDatabase)"]
-        Repo --> Prefs["Jetpack DataStore Preferences"]
-        Repo --> Backup["Local JSON Backup Engine"]
-    end
-```
+<br />
+
+<div dir="rtl" align="right">
+
+### لایه‌بندی معماری:
+1. **لایه‌ی رابط کاربری (UI Layer):** پیاده‌سازی شده با Jetpack Compose Material 3، شامل صفحات خانه، برنامه‌ریز، گزارش، تمرین زنده و تور دولینگو به همراه موشن گرافیک ۳ بعدی.
+2. **لایه‌ی وضعیت و منطق ارائه (ViewModel & MVI StateFlow):** مدیریت تک‌مسیره جریان داده با `StateFlow`، پردازش رویدادهای کاربر و انتشار وضعیت یکپارچه `GymPlannerUiState`.
+3. **لایه‌ی دامنه و مخزن (Domain & Repository):** متمرکزسازی منطق برنامه در `GymPlannerRepository` به همراه موتور محاسباتی تاریخ هجری شمسی (`PersianDateHelper`).
+4. **لایه‌ی داده و ذخیره‌سازی محلی (Local Storage Data Layer):** پایگاه داده محلی ۱۰۰٪ آفلاین Room SQLite و ذخیره‌ساز تنظیمات DataStore بدون هیچ وابستگی ابری.
+
+</div>
 
 ---
 
@@ -161,10 +155,16 @@ cd GymPlanner
 
 <br />
 
-<div align="center">
+<div align="center" dir="rtl">
+
+---
 
 ### 🖤
-**ساخته‌شده با تمام عشق و احساس، به یادبود همیشگی دوست خوبمان «مهرداد»**  
-*Forever in our hearts • In loving memory of Mehrdad*
+## به یاد دوست خوبمان «مهرشاد»
+**توسعه و به ثمر نشستن این اپلیکیشن با یاد، نام و خاطرات فراموش‌نشدنی دوست عزیزمان «مهرشاد» همراه بوده است.**  
+*روحت شاد و یادت تا ابد در دل‌های ما جاودان خواهد ماند.*  
+🕊️
+<br />
+<sub>Forever in our hearts • In loving memory of Mehrshad</sub>
 
 </div>

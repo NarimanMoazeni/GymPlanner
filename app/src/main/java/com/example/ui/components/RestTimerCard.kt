@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -71,8 +72,8 @@ fun RestTimerCard(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
-    var secondsLeft by remember { mutableIntStateOf(initialSeconds) }
-    var isRunning by remember { mutableStateOf(false) } // Default state: Paused
+    var secondsLeft by rememberSaveable { mutableIntStateOf(initialSeconds) }
+    var isRunning by rememberSaveable { mutableStateOf(false) } // Default state: Paused
 
     LaunchedEffect(isRunning, secondsLeft) {
         if (isRunning && secondsLeft > 0) {

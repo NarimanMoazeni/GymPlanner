@@ -45,6 +45,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,18 +92,18 @@ fun AddEditActivitySheet(
     val strings = LocalAppStrings.current
     val language = LocalCurrentLanguage.current
 
-    var name by remember(initialActivity) { mutableStateOf(initialActivity?.name ?: "") }
-    var subtitle by remember(initialActivity) { mutableStateOf(initialActivity?.subtitle ?: "") }
-    var type by remember(initialActivity) { mutableStateOf(initialActivity?.type ?: ActivityType.WEIGHT_REPS) }
-    var sets by remember(initialActivity) { mutableIntStateOf(initialActivity?.sets ?: 4) }
-    var reps by remember(initialActivity) { mutableIntStateOf(initialActivity?.reps ?: 10) }
-    var weight by remember(initialActivity, weightUnit) {
+    var name by rememberSaveable(initialActivity) { mutableStateOf(initialActivity?.name ?: "") }
+    var subtitle by rememberSaveable(initialActivity) { mutableStateOf(initialActivity?.subtitle ?: "") }
+    var type by rememberSaveable(initialActivity) { mutableStateOf(initialActivity?.type ?: ActivityType.WEIGHT_REPS) }
+    var sets by rememberSaveable(initialActivity) { mutableIntStateOf(initialActivity?.sets ?: 4) }
+    var reps by rememberSaveable(initialActivity) { mutableIntStateOf(initialActivity?.reps ?: 10) }
+    var weight by rememberSaveable(initialActivity, weightUnit) {
         val initialKg = initialActivity?.weight ?: 25.0
         mutableDoubleStateOf(WeightUnit.fromKg(initialKg, weightUnit))
     }
-    var duration by remember(initialActivity) { mutableIntStateOf(initialActivity?.durationMinutes ?: 15) }
-    var distance by remember(initialActivity) { mutableDoubleStateOf(initialActivity?.distanceKm ?: 3.0) }
-    var nameError by remember { mutableStateOf<String?>(null) }
+    var duration by rememberSaveable(initialActivity) { mutableIntStateOf(initialActivity?.durationMinutes ?: 15) }
+    var distance by rememberSaveable(initialActivity) { mutableDoubleStateOf(initialActivity?.distanceKm ?: 3.0) }
+    var nameError by rememberSaveable { mutableStateOf<String?>(null) }
 
     val unitLabel = if (weightUnit == WeightUnit.KG) "kg" else "lbs"
     val unitSuffix = if (weightUnit == WeightUnit.KG) "کیلو" else "پوند"

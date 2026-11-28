@@ -41,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,9 +109,9 @@ fun PlannerScreen(
     val activities = activitiesMap[selectedDayIndex] ?: emptyList()
     val dayName = PersianDateHelper.getDayOfWeekName(selectedDayIndex, language)
 
-    var showEditFocusDialog by remember { mutableStateOf(false) }
-    var editingFocusText by remember { mutableStateOf("") }
-    var isCalendarExpanded by remember { mutableStateOf(false) }
+    var showEditFocusDialog by rememberSaveable { mutableStateOf(false) }
+    var editingFocusText by rememberSaveable { mutableStateOf("") }
+    var isCalendarExpanded by rememberSaveable { mutableStateOf(false) }
 
     LazyColumn(
         modifier = modifier

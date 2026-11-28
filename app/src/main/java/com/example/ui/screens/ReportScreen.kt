@@ -50,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -123,9 +124,9 @@ fun ReportScreen(
     val tourReporter = LocalTourTargetReporter.current
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
-    var showLogWeightDialog by remember { mutableStateOf(false) }
-    var showEditStatsDialog by remember { mutableStateOf(false) }
-    var showFullCalendarDialog by remember { mutableStateOf(false) }
+    var showLogWeightDialog by rememberSaveable { mutableStateOf(false) }
+    var showEditStatsDialog by rememberSaveable { mutableStateOf(false) }
+    var showFullCalendarDialog by rememberSaveable { mutableStateOf(false) }
 
     // Parse weight history strictly from real user data
     val weightPoints = remember(weightHistoryRaw) {
@@ -1935,8 +1936,7 @@ private fun formatMonthLabel(dateKey: String, language: AppLanguage): String {
         val gd = parts[2].toIntOrNull() ?: 1
         return if (language == AppLanguage.PERSIAN) {
             val (_, pMonth, _) = com.example.util.PersianDateHelper.gregorianToPersian(gy, gm, gd)
-            val pNames = listOf("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
-            pNames.getOrElse(pMonth - 1) { "" }
+            com.example.util.PersianDateHelper.PERSIAN_MONTH_NAMES.getOrElse(pMonth - 1) { "" }
         } else {
             val eNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             eNames.getOrElse(gm - 1) { "" }
@@ -1947,8 +1947,7 @@ private fun formatMonthLabel(dateKey: String, language: AppLanguage): String {
         val gd = parts[1].toIntOrNull() ?: 1
         return if (language == AppLanguage.PERSIAN) {
             val (_, pMonth, _) = com.example.util.PersianDateHelper.gregorianToPersian(gy, gm, gd)
-            val pNames = listOf("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
-            pNames.getOrElse(pMonth - 1) { "" }
+            com.example.util.PersianDateHelper.PERSIAN_MONTH_NAMES.getOrElse(pMonth - 1) { "" }
         } else {
             val eNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
             eNames.getOrElse(gm - 1) { "" }

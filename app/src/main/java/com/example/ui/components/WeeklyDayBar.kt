@@ -81,7 +81,7 @@ fun WeeklyDayBar(
             TactileDayKey(
                 dayIndex = i,
                 dayShortName = dateInfo?.dayOfWeekShort ?: "",
-                dayNumber = dateInfo?.dayOfMonth ?: (23 + i),
+                dayNumber = dateInfo?.dayOfMonth ?: i,
                 isSelected = isSelected,
                 isToday = isToday,
                 isTrainingDay = isTrainingDay,

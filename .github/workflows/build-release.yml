@@ -1,0 +1,84 @@
+name: Build & Publish GymPlanner Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag Name (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android APK & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Run Unit Tests
+        run: gradle testDebugUnitTest --no-daemon
+
+      - name: Build Universal Installable APK
+        run: gradle assembleDebug --no-daemon
+
+      - name: Prepare APK Asset
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/debug/app-debug.apk release-assets/GymPlanner-v1.0.0.apk
+          ls -lh release-assets/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: GymPlanner-v1.0.0-APK
+          path: release-assets/GymPlanner-v1.0.0.apk
+
+      - name: Publish or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.ref_name || inputs.tag_name || 'v1.0.0' }}
+          name: "GymPlanner v1.0.0 - Official Release 🚀"
+          files: release-assets/GymPlanner-v1.0.0.apk
+          generate_release_notes: false
+          body: |
+            ## 🏋️‍♂️ GymPlanner v1.0.0 - Official Release
+
+            نخستین انتشار رسمی اپلیکیشن بدنسازی و برنامه‌ریزی تمرینی **GymPlanner** برای سیستم‌عامل اندروید.
+
+            ### 🚀 ویژگی‌های کلیدی این نسخه:
+            - **🎬 اسپلش اسکرین سه‌بعدی روان:** انیمیشن موشن گرافیک ۳ بعدی اختصاصی با قلم شناور و پر کردن همگام نوار پیشرفت.
+            - **💡 تور آموزشی تعاملی سبک دولینگو (Spotlight Tour):** معرفی قابلیت‌های اپلیکیشن روی صفحات زنده با افکت نورافکن و بالون‌های اشاره‌گر.
+            - **📅 تقویم هوشمند شمسی و میلادی:** تقویم آکاردئونی ماهانه و نوار ۷ روزه هفتگی با تعیین تمرکز عضلانی هر روز.
+            - **⚡ ثبت حرکات و تمرین زنده:** ثبت حرکات، ست‌ها، وزنه‌ها، تکرارها، مسافت، زمان و تایمر هوشمند استراحت بین ست‌ها.
+            - **📊 آنالیز پیشرفت بدنی و نمودار وزن:** محاسبه خودکار شاخص BMI، نمودار تغییرات وزن و نمایش تسلسل روزهای تمرین (Streak).
+            - **🎨 سیستم طراحی ارگونومیک (Tactile UI):** تم تیره و روشن، انیمیشن‌های ترنزیشن الاستیک و داک شناور.
+            - **🌐 پشتیبانی کامل دو زبانه:** رابط کاربری کاملاً بومی‌سازی شده به زبان‌های فارسی و انگلیسی.
+            - **🔒 کاملاً آفلاین و امن:** بدون نیاز به اینترنت، با پایگاه داده محلی Room و حفظ حریم خصوصی ۱۰۰٪.
+
+            ### 📦 نحوه نصب:
+            فایل `GymPlanner-v1.0.0.apk` را از بخش Assets این رلیز دانلود کرده و روی دستگاه اندرویدی خود نصب نمایید.
+          draft: false
+          prerelease: false

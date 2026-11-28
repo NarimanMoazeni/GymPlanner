@@ -64,6 +64,8 @@ class GymPlannerViewModel(application: Application) : AndroidViewModel(applicati
     private val _uiState = MutableStateFlow(GymPlannerUiState())
     val uiState: StateFlow<GymPlannerUiState> = _uiState.asStateFlow()
     private var plannerCompletionsJob: Job? = null
+    private var todaySessionJob: Job? = null
+    private var todayCompletionsJob: Job? = null
 
     init {
         val cal = Calendar.getInstance()
@@ -132,17 +134,7 @@ class GymPlannerViewModel(application: Application) : AndroidViewModel(applicati
         }
 
         // Observe today's session and completion
-        viewModelScope.launch {
-            repository.getSessionForDate(todayKey).collect { session ->
-                _uiState.update { it.copy(todaySession = session) }
-            }
-        }
-
-        viewModelScope.launch {
-            repository.getCompletedActivitiesForDate(todayKey).collect { completed ->
-                _uiState.update { it.copy(completedActivitiesToday = completed) }
-            }
-        }
+        observeTodayData(todayKey)
 
         viewModelScope.launch {
             repository.allSessionsFlow.collect { sessions ->
@@ -157,6 +149,39 @@ class GymPlannerViewModel(application: Application) : AndroidViewModel(applicati
         }
 
         observePlannerDayCompletions(todayWeek)
+    }
+
+    private fun observeTodayData(todayKey: String) {
+        todaySessionJob?.cancel()
+        todaySessionJob = viewModelScope.launch {
+            repository.getSessionForDate(todayKey).collect { session ->
+                _uiState.update { it.copy(todaySession = session) }
+            }
+        }
+
+        todayCompletionsJob?.cancel()
+        todayCompletionsJob = viewModelScope.launch {
+            repository.getCompletedActivitiesForDate(todayKey).collect { completed ->
+                _uiState.update { it.copy(completedActivitiesToday = completed) }
+            }
+        }
+    }
+
+    fun checkAndRefreshCurrentDate() {
+        val cal = Calendar.getInstance()
+        val todayWeek = PersianDateHelper.calendarDayToWeekIndex(cal.get(Calendar.DAY_OF_WEEK))
+        val todayKey = PersianDateHelper.getTodayDateKey()
+
+        if (_uiState.value.todayDateKey != todayKey || _uiState.value.todayWeekIndex != todayWeek) {
+            _uiState.update {
+                it.copy(
+                    todayWeekIndex = todayWeek,
+                    todayDateKey = todayKey
+                )
+            }
+            observeTodayData(todayKey)
+            observePlannerDayCompletions(_uiState.value.selectedPlannerDay)
+        }
     }
 
     private fun observePlannerDayCompletions(dayOfWeek: Int) {
@@ -209,6 +234,7 @@ class GymPlannerViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     fun navigateTo(screen: AppScreen) {
+        checkAndRefreshCurrentDate()
         _uiState.update { it.copy(currentScreen = screen) }
     }
 

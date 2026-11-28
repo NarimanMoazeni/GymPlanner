@@ -2,6 +2,7 @@ package com.example.util
 
 import com.example.ui.locale.AppLanguage
 import java.util.Calendar
+import java.util.Locale
 
 data class FormattedDateInfo(
     val dayOfWeekIndex: Int, // 1=Sat, 2=Sun, 3=Mon, 4=Tue, 5=Wed, 6=Thu, 7=Fri
@@ -16,7 +17,7 @@ object PersianDateHelper {
 
     private val PERSIAN_DAY_NAMES = listOf("شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه")
     private val PERSIAN_DAY_SHORTS = listOf("ش", "ی", "د", "س", "چ", "پ", "ج")
-    private val PERSIAN_MONTH_NAMES = listOf(
+    val PERSIAN_MONTH_NAMES = listOf(
         "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
         "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
     )
@@ -247,7 +248,7 @@ object PersianDateHelper {
         val y = cal.get(Calendar.YEAR)
         val m = cal.get(Calendar.MONTH) + 1
         val d = cal.get(Calendar.DAY_OF_MONTH)
-        return String.format("%04d-%02d-%02d", y, m, d)
+        return String.format(Locale.US, "%04d-%02d-%02d", y, m, d)
     }
 
     fun getDateKeyForDayOfWeek(dayOfWeek: Int): String {
@@ -261,6 +262,14 @@ object PersianDateHelper {
         val y = targetCal.get(Calendar.YEAR)
         val m = targetCal.get(Calendar.MONTH) + 1
         val d = targetCal.get(Calendar.DAY_OF_MONTH)
-        return String.format("%04d-%02d-%02d", y, m, d)
+        return String.format(Locale.US, "%04d-%02d-%02d", y, m, d)
+    }
+
+    fun getDaysInPersianMonth(pYear: Int, pMonth: Int): Int {
+        return when {
+            pMonth in 1..6 -> 31
+            pMonth in 7..11 -> 30
+            else -> if ((pYear % 33) in listOf(1, 5, 9, 13, 17, 22, 26, 30)) 30 else 29
+        }
     }
 }

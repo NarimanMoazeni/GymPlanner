@@ -1,5 +1,9 @@
 package com.example
 
+/*
+ * NOTE: Robolectric and Roborazzi dependencies are not configured in this project's gradle files.
+ * Uncomment once Roborazzi / Robolectric dependencies are added to gradle.
+ *
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.example.ui.locale.AppLanguage
@@ -17,7 +21,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 @RunWith(RobolectricTestRunner::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(qualifiers = RobolectricDeviceQualifiers.Pixel8, sdk = [34])
 class GreetingScreenshotTest {
 
@@ -39,3 +42,4 @@ class GreetingScreenshotTest {
     composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/onboarding.png")
   }
 }
+*/

@@ -34,6 +34,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -201,12 +204,23 @@ fun SpotlightTourOverlay(
         }
 
         // 2. Duolingo-style Floating Tooltip Speech Bubble
+        val isLandscape = screenWidthPx > screenHeightPx
         val isTargetInBottomHalf = targetRect.center.y > (screenHeightPx * 0.48f)
 
         // Calculate vertical placement for tooltip
         val tooltipY = if (currentStep.target == TourTarget.TOUR_FINISH) {
             // Centered for finish screen
-            (screenHeightPx * 0.35f).roundToInt()
+            ((screenHeightPx - with(density) { 220.dp.toPx() }) / 2f).coerceAtLeast(16f).roundToInt()
+        } else if (isLandscape) {
+            val idealY = if (isTargetInBottomHalf) {
+                (targetRect.top - paddingPx - with(density) { 190.dp.toPx() })
+            } else {
+                (targetRect.bottom + paddingPx + with(density) { 8.dp.toPx() })
+            }
+            idealY.coerceIn(
+                with(density) { 8.dp.toPx() },
+                (screenHeightPx - with(density) { 210.dp.toPx() }).coerceAtLeast(with(density) { 8.dp.toPx() })
+            ).roundToInt()
         } else if (isTargetInBottomHalf) {
             // Place ABOVE target
             (targetRect.top - paddingPx - with(density) { 260.dp.toPx() }).coerceAtLeast(with(density) { 60.dp.toPx() }).roundToInt()
@@ -223,7 +237,10 @@ fun SpotlightTourOverlay(
             contentAlignment = Alignment.Center
         ) {
             Column(
-                modifier = Modifier.widthIn(max = 410.dp),
+                modifier = Modifier
+                    .widthIn(max = if (isLandscape) 460.dp else 410.dp)
+                    .heightIn(max = if (isLandscape) (screenHeightPx / density.density - 16).dp else 450.dp)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Top pointer arrow (pointing UP if tooltip is placed below target)

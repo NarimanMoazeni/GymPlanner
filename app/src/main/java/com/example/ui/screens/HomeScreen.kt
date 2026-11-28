@@ -47,6 +47,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -119,8 +120,8 @@ fun HomeScreen(
     // Total completed days this week calculation
     val plannedTrainingDaysCount = workoutDays.count { it.isTrainingDay }
 
-    var showEditGoalDialog by remember { mutableStateOf(false) }
-    var editingGoalText by remember { mutableStateOf("") }
+    var showEditGoalDialog by rememberSaveable { mutableStateOf(false) }
+    var editingGoalText by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = modifier

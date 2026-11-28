@@ -38,7 +38,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import java.util.Locale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,11 +82,11 @@ fun NumericStepperCard(
 ) {
     val language = LocalCurrentLanguage.current
     val strings = LocalAppStrings.current
-    var showManualInputDialog by remember { mutableStateOf(false) }
+    var showManualInputDialog by rememberSaveable { mutableStateOf(false) }
 
     val isDecimal = value.toDouble() % 1.0 != 0.0 || step % 1.0 != 0.0
     val displayStr = if (isDecimal) {
-        String.format("%.1f", value.toDouble())
+        String.format(Locale.US, "%.1f", value.toDouble())
     } else {
         value.toLong().toString()
     }
@@ -217,8 +219,8 @@ fun NumericStepperCard(
 
     // Manual Input Dialog
     if (showManualInputDialog) {
-        var inputVal by remember { mutableStateOf(displayStr) }
-        var inputError by remember { mutableStateOf<String?>(null) }
+        var inputVal by rememberSaveable { mutableStateOf(displayStr) }
+        var inputError by rememberSaveable { mutableStateOf<String?>(null) }
 
         AlertDialog(
             onDismissRequest = { showManualInputDialog = false },

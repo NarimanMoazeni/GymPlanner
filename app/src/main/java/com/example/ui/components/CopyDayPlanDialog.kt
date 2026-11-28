@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +43,7 @@ fun CopyDayPlanDialog(
     val language = LocalCurrentLanguage.current
     val sourceDayName = PersianDateHelper.getDayOfWeekName(sourceDayOfWeek, language)
 
-    var selectedTargetDay by remember {
+    var selectedTargetDay by rememberSaveable {
         mutableIntStateOf(if (sourceDayOfWeek == 2) 4 else 2)
     }
 

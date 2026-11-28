@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -136,134 +137,70 @@ fun PlannerActivityCard(
             .testTag("activity_card_${activity.id}"),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // TOP ROW: Natural Symmetry
-        // [START] 32.dp Checkbox + Index + Title + Subtitle
-        // [END] Up/Down Chevrons + [Duplicate] [Edit] [Delete] with 8.dp spacing & 40.dp targets
+        // ROW 1 (HEADER): Full Width Exercise Title with Checkbox, Index & Smooth Marquee
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onEdit),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Start section: Checkbox + Title / Subtitle
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onEdit),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            // 32.dp Tactile Circular Completion Checkbox with bouncy spring animation
+            TactileCompletionCheckbox(
+                isDone = isDone,
+                onClick = onToggleDone,
+                testTag = "btn_done_activity_${activity.id}"
+            )
+
+            // Index Pill
+            Text(
+                text = formatDigits(indexStr, language),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    letterSpacing = 0.sp
+                ),
+                maxLines = 1,
+                softWrap = false,
+                color = if (isDone) EmeraldGreen else MaterialTheme.colorScheme.primary
+            )
+
+            // Exercise Title + Subtitle taking full remaining width
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // 32.dp Tactile Circular Completion Checkbox with bouncy spring animation
-                TactileCompletionCheckbox(
-                    isDone = isDone,
-                    onClick = onToggleDone,
-                    testTag = "btn_done_activity_${activity.id}"
+                Text(
+                    text = activity.name,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None
+                    ),
+                    color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee(
+                        iterations = Int.MAX_VALUE,
+                        repeatDelayMillis = 1500,
+                        initialDelayMillis = 2000
+                    )
                 )
-
-                // Title + Subtitle Column
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = formatDigits(indexStr, language),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.Monospace,
-                                letterSpacing = 0.sp
-                            ),
-                            maxLines = 1,
-                            softWrap = false,
-                            color = if (isDone) EmeraldGreen else MaterialTheme.colorScheme.primary
+                if (activity.subtitle.isNotBlank()) {
+                    Text(
+                        text = activity.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee(
+                            iterations = Int.MAX_VALUE,
+                            repeatDelayMillis = 1500,
+                            initialDelayMillis = 2000
                         )
-                        Text(
-                            text = activity.name,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold,
-                                textDecoration = if (isDone) TextDecoration.LineThrough else TextDecoration.None
-                            ),
-                            color = if (isDone) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    if (activity.subtitle.isNotBlank()) {
-                        Text(
-                            text = activity.subtitle,
-                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    )
                 }
-            }
-
-            // End section: Up/Down Reorder + Tactile Squircles [Duplicate, Edit, Delete] (40dp size, 8dp gap)
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Reorder Up / Down Chevrons
-                Column(
-                    verticalArrangement = Arrangement.spacedBy((-8).dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    IconButton(
-                        onClick = onMoveUp,
-                        modifier = Modifier.size(26.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = strings.moveUpBtn,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    IconButton(
-                        onClick = onMoveDown,
-                        modifier = Modifier.size(26.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = strings.moveDownBtn,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-
-                // 3 Tactile Squircles with 40dp touch target and 8dp spacing
-                TactileSquircleButton(
-                    icon = Icons.Default.ContentCopy,
-                    contentDescription = strings.duplicateBtn,
-                    variant = SquircleVariant.NEUTRAL,
-                    onClick = onDuplicate,
-                    testTag = "btn_duplicate_${activity.id}"
-                )
-
-                TactileSquircleButton(
-                    icon = Icons.Default.Edit,
-                    contentDescription = strings.editBtn,
-                    variant = SquircleVariant.NEUTRAL,
-                    onClick = onEdit,
-                    testTag = "btn_edit_${activity.id}"
-                )
-
-                TactileSquircleButton(
-                    icon = Icons.Default.Delete,
-                    contentDescription = strings.deleteBtn,
-                    variant = SquircleVariant.CORAL_DELETE,
-                    onClick = onDelete,
-                    testTag = "btn_delete_${activity.id}"
-                )
             }
         }
 
-        // BOTTOM ROW: 3 Tactile Metric Pills
+        // ROW 2: 3 Tactile Metric Pills
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -348,6 +285,76 @@ fun PlannerActivityCard(
                         modifier = Modifier.weight(1f)
                     )
                 }
+            }
+        }
+
+        // ROW 3: Action Controls Bar (Reorder chevrons on start + Duplicate, Edit, Delete Squircles on end)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Reorder Up / Down Chevrons in compact pill
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(if (isDark) Color(0xFF1E2130) else Color(0xFFEDEEF6))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                IconButton(
+                    onClick = onMoveUp,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowUp,
+                        contentDescription = strings.moveUpBtn,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                IconButton(
+                    onClick = onMoveDown,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = strings.moveDownBtn,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // 3 Tactile Squircles with 40dp touch target and 8dp spacing
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                TactileSquircleButton(
+                    icon = Icons.Default.ContentCopy,
+                    contentDescription = strings.duplicateBtn,
+                    variant = SquircleVariant.NEUTRAL,
+                    onClick = onDuplicate,
+                    testTag = "btn_duplicate_${activity.id}"
+                )
+
+                TactileSquircleButton(
+                    icon = Icons.Default.Edit,
+                    contentDescription = strings.editBtn,
+                    variant = SquircleVariant.NEUTRAL,
+                    onClick = onEdit,
+                    testTag = "btn_edit_${activity.id}"
+                )
+
+                TactileSquircleButton(
+                    icon = Icons.Default.Delete,
+                    contentDescription = strings.deleteBtn,
+                    variant = SquircleVariant.CORAL_DELETE,
+                    onClick = onDelete,
+                    testTag = "btn_delete_${activity.id}"
+                )
             }
         }
     }

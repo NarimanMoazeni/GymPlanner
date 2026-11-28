@@ -50,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,13 +104,13 @@ fun SettingsScreen(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val accentColor = if (isDark) EmeraldGreen else ElectricIndigo
 
-    var showEditProfileDialog by remember { mutableStateOf(false) }
-    var showExportDialog by remember { mutableStateOf(false) }
-    var showImportDialog by remember { mutableStateOf(false) }
-    var showResetConfirmDialog by remember { mutableStateOf(false) }
-    var exportedJsonText by remember { mutableStateOf("") }
-    var importJsonInput by remember { mutableStateOf("") }
-    var importStatusMessage by remember { mutableStateOf<String?>(null) }
+    var showEditProfileDialog by rememberSaveable { mutableStateOf(false) }
+    var showExportDialog by rememberSaveable { mutableStateOf(false) }
+    var showImportDialog by rememberSaveable { mutableStateOf(false) }
+    var showResetConfirmDialog by rememberSaveable { mutableStateOf(false) }
+    var exportedJsonText by rememberSaveable { mutableStateOf("") }
+    var importJsonInput by rememberSaveable { mutableStateOf("") }
+    var importStatusMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     LazyColumn(
         modifier = modifier

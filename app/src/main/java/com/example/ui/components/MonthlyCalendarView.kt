@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +77,7 @@ fun MonthlyCalendarExpansion(
     onToggleExpanded: (() -> Unit)? = null
 ) {
     val strings = LocalAppStrings.current
-    var internalExpanded by remember { mutableStateOf(false) }
+    var internalExpanded by rememberSaveable { mutableStateOf(false) }
     val expanded = isExpanded ?: internalExpanded
     val toggle = onToggleExpanded ?: { internalExpanded = !internalExpanded }
 
@@ -184,7 +185,7 @@ fun MonthlyCalendarGrid(
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     // Navigation state: current calendar month offset
-    var monthOffset by remember { mutableIntStateOf(0) }
+    var monthOffset by rememberSaveable { mutableIntStateOf(0) }
 
     val todayCal = remember { Calendar.getInstance() }
     val (todayPYear, todayPMonth, todayPDay) = remember {
@@ -214,11 +215,7 @@ fun MonthlyCalendarGrid(
 
     // Days in current display month
     val daysInMonth = if (language == AppLanguage.PERSIAN) {
-        when {
-            displayPMonth in 1..6 -> 31
-            displayPMonth in 7..11 -> 30
-            else -> if ((displayPYear % 33) in listOf(1, 5, 9, 13, 17, 22, 26, 30)) 30 else 29
-        }
+        PersianDateHelper.getDaysInPersianMonth(displayPYear, displayPMonth)
     } else {
         displayCal.getActualMaximum(Calendar.DAY_OF_MONTH)
     }
@@ -251,18 +248,14 @@ fun MonthlyCalendarGrid(
     }
 
     // Selected day of month within this calendar view
-    var selectedCalendarDay by remember {
+    var selectedCalendarDay by rememberSaveable {
         mutableIntStateOf(if (isCurrentDisplayMonth) todayDayOfMonth else 1)
     }
 
     // Month Title text: e.g. "شهریور ۱۴۰۵" or "September 2026"
     val monthTitle = remember(monthOffset, displayPYear, displayPMonth, currentYear, currentMonth, language) {
         if (language == AppLanguage.PERSIAN) {
-            val pMonthNames = listOf(
-                "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-                "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-            )
-            val mName = pMonthNames.getOrElse(displayPMonth - 1) { "" }
+            val mName = PersianDateHelper.PERSIAN_MONTH_NAMES.getOrElse(displayPMonth - 1) { "" }
             "$mName ${formatDigits(displayPYear, language)}"
         } else {
             val eMonthNames = listOf(

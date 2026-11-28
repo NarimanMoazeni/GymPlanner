@@ -9,8 +9,8 @@
 
 ### 🚀 دریافت فایل نصبی (APK):
 - **فایل در مخزن:** [`GymPlanner-v1.1.0.apk`](GymPlanner-v1.1.0.apk)
-- **لینک دانلود مستقیم از بخش Releases:** [دانلود مستقیم نسخه v1.1.0](https://github.com/NariManoV21/GymPlanner/releases/download/v1.1.0/GymPlanner-v1.1.0.apk)
-- **صفحه رلیز رسمی:** [مشاهده توضیحات کامل Release v1.1.0 در گیت‌هاب](https://github.com/NariManoV21/GymPlanner/releases/tag/v1.1.0)
+- **لینک دانلود مستقیم از بخش Releases:** [دانلود مستقیم نسخه v1.1.0](https://github.com/NarimanMoazeni/GymPlanner/releases/download/v1.1.0/GymPlanner-v1.1.0.apk)
+- **صفحه رلیز رسمی:** [مشاهده توضیحات کامل Release v1.1.0 در گیت‌هاب](https://github.com/NarimanMoazeni/GymPlanner/releases/tag/v1.1.0)
 
 ---
 

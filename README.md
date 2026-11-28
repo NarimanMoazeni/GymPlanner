@@ -15,7 +15,7 @@
   [![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20MVI-009688?style=for-the-badge)](https://developer.android.com/topic/architecture)
   [![Storage](https://img.shields.io/badge/Storage-Room%20DB%20%2B%20DataStore-FF6F00?style=for-the-badge&logo=sqlite&logoColor=white)](https://developer.android.com/training/data-storage/room)
   [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
-  [![Release](https://img.shields.io/badge/Release-v1.1.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/NariManoV21/GymPlanner/releases/tag/v1.1.0)
+  [![Release](https://img.shields.io/badge/Release-v1.1.0-brightgreen?style=for-the-badge&logo=github)](https://github.com/NarimanMoazeni/GymPlanner/releases/tag/v1.1.0)
 
 </div>
 
@@ -133,11 +133,11 @@
 
 <div align="center">
 
-[![Download APK](https://img.shields.io/badge/دانلود_مستقیم_فایل_نصبی-GymPlanner_v1.1.0.apk-00C853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/NariManoV21/GymPlanner/releases/download/v1.1.0/GymPlanner-v1.1.0.apk)
+[![Download APK](https://img.shields.io/badge/دانلود_مستقیم_فایل_نصبی-GymPlanner_v1.1.0.apk-00C853?style=for-the-badge&logo=android&logoColor=white)](https://github.com/NarimanMoazeni/GymPlanner/releases/download/v1.1.0/GymPlanner-v1.1.0.apk)
 
 <br />
 
-👉 **[مشاهده و دریافت نسخه v1.1.0 در GitHub Releases](https://github.com/NariManoV21/GymPlanner/releases/tag/v1.1.0)**
+👉 **[مشاهده و دریافت نسخه v1.1.0 در GitHub Releases](https://github.com/NarimanMoazeni/GymPlanner/releases/tag/v1.1.0)**
 
 </div>
 
@@ -157,7 +157,7 @@
 
 ```bash
 # ۱. دریافت کدهای پروژه
-git clone https://github.com/NariManoV21/GymPlanner.git
+git clone https://github.com/NarimanMoazeni/GymPlanner.git
 cd GymPlanner
 
 # ۲. اجرای تست‌ها

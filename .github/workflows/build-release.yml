@@ -1,4 +1,4 @@
-name: Build & Publish GymPlanner Release APK
+name: Publish GymPlanner Release APK
 
 on:
   push:
@@ -7,78 +7,79 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Release Tag Name (e.g. v1.0.0)'
+        description: 'Release Tag Name (e.g. v1.1.0)'
         required: true
-        default: 'v1.0.0'
+        default: 'v1.1.0'
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build Android APK & Release
+  release:
+    name: Attach APK Asset to GitHub Release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.3.1'
-
-      - name: Run Unit Tests
-        run: gradle testDebugUnitTest --no-daemon
-
-      - name: Build Universal Installable APK
-        run: gradle assembleDebug --no-daemon
-
       - name: Prepare APK Asset
         run: |
           mkdir -p release-assets
-          cp app/build/outputs/apk/debug/app-debug.apk release-assets/GymPlanner-v1.0.0.apk
+          cp release/GymPlanner-v1.1.0.apk release-assets/GymPlanner-v1.1.0.apk
           ls -lh release-assets/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: GymPlanner-v1.0.0-APK
-          path: release-assets/GymPlanner-v1.0.0.apk
+          sha256sum release-assets/GymPlanner-v1.1.0.apk
 
       - name: Publish or Update GitHub Release
         uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
-          tag_name: ${{ github.ref_name || inputs.tag_name || 'v1.0.0' }}
-          name: "GymPlanner v1.0.0 - Official Release 🚀"
-          files: release-assets/GymPlanner-v1.0.0.apk
+          tag_name: ${{ github.ref_name || inputs.tag_name || 'v1.1.0' }}
+          name: "GymPlanner v1.1.0 - Official Release 🚀"
+          files: release-assets/GymPlanner-v1.1.0.apk
           generate_release_notes: false
           body: |
-            ## 🏋️‍♂️ GymPlanner v1.0.0 - Official Release
+            # 🏋️‍♂️ GymPlanner v1.1.0 - Official Release 🚀
 
-            نخستین انتشار رسمی اپلیکیشن بدنسازی و برنامه‌ریزی تمرینی **GymPlanner** برای سیستم‌عامل اندروید.
+            <div dir="rtl" align="right">
 
-            ### 🚀 ویژگی‌های کلیدی این نسخه:
-            - **🎬 اسپلش اسکرین سه‌بعدی روان:** انیمیشن موشن گرافیک ۳ بعدی اختصاصی با قلم شناور و پر کردن همگام نوار پیشرفت.
-            - **💡 تور آموزشی تعاملی سبک دولینگو (Spotlight Tour):** معرفی قابلیت‌های اپلیکیشن روی صفحات زنده با افکت نورافکن و بالون‌های اشاره‌گر.
-            - **📅 تقویم هوشمند شمسی و میلادی:** تقویم آکاردئونی ماهانه و نوار ۷ روزه هفتگی با تعیین تمرکز عضلانی هر روز.
-            - **⚡ ثبت حرکات و تمرین زنده:** ثبت حرکات، ست‌ها، وزنه‌ها، تکرارها، مسافت، زمان و تایمر هوشمند استراحت بین ست‌ها.
-            - **📊 آنالیز پیشرفت بدنی و نمودار وزن:** محاسبه خودکار شاخص BMI، نمودار تغییرات وزن و نمایش تسلسل روزهای تمرین (Streak).
-            - **🎨 سیستم طراحی ارگونومیک (Tactile UI):** تم تیره و روشن، انیمیشن‌های ترنزیشن الاستیک و داک شناور.
-            - **🌐 پشتیبانی کامل دو زبانه:** رابط کاربری کاملاً بومی‌سازی شده به زبان‌های فارسی و انگلیسی.
-            - **🔒 کاملاً آفلاین و امن:** بدون نیاز به اینترنت، با پایگاه داده محلی Room و حفظ حریم خصوصی ۱۰۰٪.
+            نسخه **v1.1.0** اپلیکیشن **GymPlanner** شامل بازطراحی کامل بخش نمایش نام تمرین‌ها و رفع تمامی باگ‌های ساختاری گزارش‌شده در بخش‌های مدیریت چرخش صفحه، محاسبات تقویم شمسی و تایمر استراحت می‌باشد.
 
-            ### 📦 نحوه نصب:
-            فایل `GymPlanner-v1.0.0.apk` را از بخش Assets این رلیز دانلود کرده و روی دستگاه اندرویدی خود نصب نمایید.
+            ---
+
+            ### 🌟 مهم‌ترین تغییرات و بهبودها:
+
+            #### ۱. ارتقای رابط کاربری و رفع مشکل بریدگی نام‌های طولانی (UI/UX Marquee):
+            * عنوان تمرین به یک ردیف مستقل و تمام‌عرض با تفکیک بصری لمسی منتقل شد.
+            * عنوان تمرین به انیمیشن اسکرول افقی خودکار (`Modifier.basicMarquee`) مجهز شد تا حتی طولانی‌ترین عناوین فارسی بدون بریدگی یا نمایش ناقص با سه‌نقطه (`...`) به نرمی حرکت کرده و به طور کامل قابل خواندن باشند.
+            * عنوان تمرین بالای صفحه تمرین فعال (`ActiveWorkoutScreen`) نیز به اسکرول افقی پیوسته مجهز شد.
+
+            #### ۲. رفع مشکلات ساختاری چرخش صفحه (Configuration Changes / Orientation):
+            * پایدارسازی تمام وضعیت‌های ورود اطلاعات در چرخش گوشی بین حالت‌های عمودی و افقی (فرم‌های ۹ گانه ثبت و ویرایش تمرین، تقویم ماهانه بازشونده، استپرهای عددی و تمامی دیالوگ‌های ویرایش و پشتیبان‌گیری) با تبدیل به `rememberSaveable`.
+            * حفظ وضعیت و ثانیه‌شمار تایمر استراحت (`RestTimerCard`) بدون توقف هنگام چرخش صفحه.
+
+            #### ۳. یکپارچه‌سازی و تثبیت ارقام تقویم شمسی:
+            * اعمال قید `Locale.US` در کلیدهای تاریخ ذخیره‌شده در SQLite جهت جلوگیری از ذخیره ارقام غیراسکی در زبان‌های فارسی یا عربی سیستم‌عامل.
+            * پیاده‌سازی متمرکز روزهای ماه‌های شمسی بر مبنای دوره‌ی ۳۳ ساله کبیسه و حذف کدهای تکراری.
+            * رفرش واکنشی و خودکار تاریخ و روز جاری در صورت باز ماندن اپلیکیشن در عبور از نیمه‌شب.
+            * بهینه‌سازی ریسپانسیو بالون راهنمای دولینگو در حالت Landscape.
+
+            ---
+
+            ### 🛡️ اطلاعات فایل نصبی و چک‌سام (Checksums):
+            | مشخصه | مقدار |
+            | :--- | :--- |
+            | **نام فایل** | `GymPlanner-v1.1.0.apk` |
+            | **نسخه** | `v1.1.0` (Build 2) |
+            | **پکیج** | `com.aistudio.gymplanner.app` |
+            | **حجم** | ۱۷.۸ مگابایت (18,615,686 بایت) |
+            | **حداقل اندروید** | Android 7.0+ (API 24+) |
+            | **SHA-256** | `9415e49682880441abe0fee52878b84a15fce58d5b64f8e9a4f14a0e7b0c3fd0` |
+            | **MD5** | `a63a27c4be452f6697c330e2117f7a80` |
+
+            </div>
+
+            ---
+
+            ### 🕊️ Dedicated in loving memory of our dear friend, Mehrshad 🖤
           draft: false
           prerelease: false
